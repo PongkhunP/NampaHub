@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Registration',
+      title: 'Homepage',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         textTheme: GoogleFonts.interTextTheme(),
