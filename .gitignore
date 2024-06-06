@@ -71,4 +71,6 @@ linux/build/
 linux/flutter/ephemeral/
 linux/generated_plugin_registrant.cc
 
+# manaully config
 node_modules
+.env
