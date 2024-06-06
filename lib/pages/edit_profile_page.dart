@@ -129,55 +129,66 @@ class _MyEditProfilePageState extends State<MyEditProfilePage> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-              child: TextFormField(
-                controller: _usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'New Username',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-              child: TextFormField(
-                controller: _universityController,
-                decoration: const InputDecoration(
-                  labelText: 'New Education',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 60),
+              padding: const EdgeInsets.only(left: 30, right: 30, bottom:10,top: 10),
               child: Container(
-                width: 380,
-                height: 50,
-                margin: const EdgeInsets.all(30.0),
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Handle submit action here
-                    String newUsername = _usernameController.text;
-                    String newUniversity = _universityController.text;
-                    // You can use newUsername and newUniversity as needed
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                margin: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: TextFormField(
+                  controller: _usernameController,
+                  decoration: const InputDecoration(
+                    hintText: 'New Username',
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(vertical: 15),
                   ),
-                  child: const Text(
-                    'Submit',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 30, right: 30, bottom:60,top: 10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                margin: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: TextFormField(
+                  controller: _universityController,
+                  decoration: const InputDecoration(
+                    hintText: 'New Education',
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(vertical: 15),
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              width: 380,
+              height: 50,
+              margin: const EdgeInsets.all(30.0),
+              child: ElevatedButton(
+                onPressed: () {
+              
+                  String newUsername = _usernameController.text;
+                  String newUniversity = _universityController.text;
+          
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+                child: const Text(
+                  'Submit',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
