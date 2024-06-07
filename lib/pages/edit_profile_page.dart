@@ -54,7 +54,7 @@ class _MyEditProfilePageState extends State<MyEditProfilePage> {
           children: [
             Stack(
               children: [
-                Center(
+                const Center(
                   child: Padding(
                     padding: EdgeInsets.only(top: 30),
                     child: ClipOval(
