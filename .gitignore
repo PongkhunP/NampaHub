@@ -74,3 +74,6 @@ linux/generated_plugin_registrant.cc
 # manaully config
 node_modules
 .env
+pubspec.lock
+pubspec.yaml
+.metadate
