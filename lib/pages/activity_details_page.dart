@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:nampa_hub/src/widget.dart'; // Ensure this import is correct
-
+ 
 void main() {
   runApp(const MyApp());
 }
