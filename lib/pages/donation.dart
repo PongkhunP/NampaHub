@@ -1,36 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Required for TextInputFormatter
-import 'package:google_fonts/google_fonts.dart';
 import 'package:nampa_hub/src/widget.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Donation',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.interTextTheme(),
-      ),
-      home: const MyDonation(),
-    );
-  }
-}
-
 class MyDonation extends StatefulWidget {
-  const MyDonation({Key? key}) : super(key: key);
+  const MyDonation({super.key});
 
   @override
-  _MyDonationState createState() => _MyDonationState();
+  MyDonationState createState() => MyDonationState();
 }
 
-class _MyDonationState extends State<MyDonation> {
+class MyDonationState extends State<MyDonation> {
   int selectedAmount = 0; // Variable to store the selected amount
   TextEditingController amountController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -195,7 +174,7 @@ class _MyDonationState extends State<MyDonation> {
                     children: [
                       TextFormField(
                         controller: amountController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Enter custom amount',
                           border: OutlineInputBorder(),
                         ),

@@ -1,37 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:nampa_hub/src/widget.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Edit Profile Page',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.interTextTheme(),
-      ),
-      home: const MyEditProfilePage(),
-    );
-  }
-}
 
 class MyEditProfilePage extends StatefulWidget {
   const MyEditProfilePage({super.key});
 
   @override
-  _MyEditProfilePageState createState() => _MyEditProfilePageState();
+  MyEditProfilePageState createState() => MyEditProfilePageState();
 }
 
-class _MyEditProfilePageState extends State<MyEditProfilePage> {
-  TextEditingController _usernameController = TextEditingController();
-  TextEditingController _universityController = TextEditingController();
+class MyEditProfilePageState extends State<MyEditProfilePage> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _universityController = TextEditingController();
 
   @override
   void dispose() {
@@ -54,7 +34,7 @@ class _MyEditProfilePageState extends State<MyEditProfilePage> {
           children: [
             Stack(
               children: [
-                Center(
+                const Center(
                   child: Padding(
                     padding: EdgeInsets.only(top: 30),
                     child: ClipOval(
@@ -71,7 +51,7 @@ class _MyEditProfilePageState extends State<MyEditProfilePage> {
                   top: 30,
                   right: 100,
                   child: IconButton(
-                    icon: Icon(Icons.edit, color: Colors.black),
+                    icon: const Icon(Icons.edit, color: Colors.black),
                     onPressed: () {
                       // Add functionality to change the image
                     },
@@ -178,7 +158,7 @@ class _MyEditProfilePageState extends State<MyEditProfilePage> {
           
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF1B8900),
+                  backgroundColor: const Color(0xFF1B8900),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.0),

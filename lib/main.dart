@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:nampa_hub/pages/home_page.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -21,6 +23,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return MyHomePage();
   }
 }
