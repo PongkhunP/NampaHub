@@ -281,7 +281,7 @@ class _MyRegisterState extends State<MyRegisterWorkTwo> {
                         ),
                       ),
                       child: const Text(
-                        'Next',
+                        'Sign up',
                         style: TextStyle(fontSize: 18),
                       ),
                     ),
