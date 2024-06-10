@@ -1,30 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:nampa_hub/src/user.dart';
 import 'package:nampa_hub/src/widget.dart';
-import 'package:nampa_hub/pages/register_workinfo_two_page.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Registration',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.interTextTheme(),
-      ),
-      home: const MyRegisterEdu(),
-    );
-  }
-}
+import 'package:nampa_hub/pages/register_workinfo_page.dart';
 
 class MyRegisterEdu extends StatefulWidget {
-  const MyRegisterEdu({super.key});
+  final VoidCallback showWorkregisPage;
+  final User user;
+  const MyRegisterEdu(
+      {super.key, required this.showWorkregisPage, required this.user});
 
   @override
   State<MyRegisterEdu> createState() => _MyRegisterState();
@@ -41,11 +24,11 @@ class _MyRegisterState extends State<MyRegisterEdu> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  void _validateAndSubmit() {
+  void _validateAndRegister() {
     if (_formKey.currentState?.validate() ?? false) {
       if (isAgreed) {
         // Perform your submission logic here
-        print("Form is valid and terms are agreed");
+        registerUser();
       } else {
         print("You must agree to the terms and conditions");
       }
@@ -54,6 +37,8 @@ class _MyRegisterState extends State<MyRegisterEdu> {
     }
   }
 
+  void registerUser() async {}
+
   final Map<String, List<String>> yearMap = {
     '1997': ['2020', '2021', '2022', '2023'],
     '1998': ['2021', '2022', '2023', '2024'],
@@ -61,12 +46,12 @@ class _MyRegisterState extends State<MyRegisterEdu> {
     '2020': ['2023', '2024', '2025', '2026'],
   };
 
-  void _navigateToStudentForm() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const MyRegisterWorkTwo()),
-    );
-  }
+  // void _navigateToStudentForm() {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(builder: (context) => const MyRegisterWorkInfo()),
+  //   );
+  // }
 
   void _showTermsDialog() {
     showDialog(
@@ -153,43 +138,55 @@ class _MyRegisterState extends State<MyRegisterEdu> {
                   const SizedBox(height: 20),
                   // Country Dropdown Widget
                   Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Container(
-                      width: 350,
-                      height: 60,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: const Color(0xFFE7E7E7)),
-                      child: Center(
-                        child: TextFormField(
-                            decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.only(top: 8, left: 10),
-                              border: InputBorder.none,
-                              hintText: 'School/University name',
-                            ),
-                            validator: (suName) => suName!.isEmpty
-                                ? 'Enter Your company name'
-                                : RegExp('[a-zA-Z]').hasMatch(suName)
-                                    ? null
-                                    : 'Enter a Valid School/University name'),
-                      ),
-                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
+                    child: TextFormField(
+                        decoration: const InputDecoration(
+                          hintText: 'School/University name',
+                          filled: true,
+                          fillColor: Color.fromARGB(255, 230, 229, 229),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(7)),
+                              borderSide: BorderSide.none),
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(7)),
+                              borderSide: BorderSide.none),
+                          errorBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(7)),
+                              borderSide: BorderSide.none),
+                          focusedErrorBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(7)),
+                              borderSide: BorderSide.none),
+                        ),
+                        validator: (suName) => suName!.isEmpty
+                            ? 'Enter Your company name'
+                            : RegExp('[a-zA-Z]').hasMatch(suName)
+                                ? null
+                                : 'Enter a Valid School/University name'),
                   ),
-                  const SizedBox(height: 15),
-                  Container(
-                    width: 350,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE7E7E7),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
                     child: DropdownButtonFormField<String>(
                       decoration: const InputDecoration(
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        focusedErrorBorder: InputBorder.none,
+                        filled: true,
+                        fillColor: Color.fromARGB(255, 230, 229, 229),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
                       ),
                       hint: const Text("Start year"),
                       dropdownColor: Colors.grey,
@@ -218,23 +215,25 @@ class _MyRegisterState extends State<MyRegisterEdu> {
                       }).toList(),
                     ),
                   ),
-                  const SizedBox(
-                    height: 25,
-                  ),
-                  Container(
-                    width: 350,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE7E7E7),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
                     child: DropdownButtonFormField<String>(
                       decoration: const InputDecoration(
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        focusedErrorBorder: InputBorder.none,
+                        filled: true,
+                        fillColor: Color.fromARGB(255, 230, 229, 229),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
                       ),
                       hint: const Text("End year"),
                       dropdownColor: Colors.grey,
@@ -262,6 +261,7 @@ class _MyRegisterState extends State<MyRegisterEdu> {
                       }).toList(),
                     ),
                   ),
+
                   Center(
                     child: Column(
                       children: [
@@ -307,7 +307,7 @@ class _MyRegisterState extends State<MyRegisterEdu> {
                                 style: TextStyle(fontSize: 16),
                               ),
                               GestureDetector(
-                                onTap: _navigateToStudentForm,
+                                onTap: widget.showWorkregisPage,
                                 child: const Text(
                                   'Employee form',
                                   style: TextStyle(
@@ -328,7 +328,7 @@ class _MyRegisterState extends State<MyRegisterEdu> {
                     width: 350,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: isAgreed ? _validateAndSubmit : null,
+                      onPressed: isAgreed ? _validateAndRegister : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
                             isAgreed ? const Color(0xFF1B8900) : Colors.grey,

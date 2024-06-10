@@ -1,37 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:nampa_hub/src/widget.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Registration',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.interTextTheme(),
-      ),
-      home: const MyRegister(),
-    );
-  }
-}
 
 final _formkey = GlobalKey<FormState>();
 
-class MyRegister extends StatefulWidget {
-  const MyRegister({super.key});
+class CreateActivityDate extends StatefulWidget {
+  const CreateActivityDate({super.key});
 
   @override
-  State<MyRegister> createState() => _MyRegisterState();
+  State<CreateActivityDate> createState() => _CreateActivityDateState();
 }
 
-class _MyRegisterState extends State<MyRegister> {
+class _CreateActivityDateState extends State<CreateActivityDate> {
   DateTime? _startRegisterDate;
   DateTime? _endRegisterDate;
   DateTime? _eventDate;
@@ -108,104 +87,140 @@ class _MyRegisterState extends State<MyRegister> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
                     child: GestureDetector(
                       onTap: () => _selectStartRegisterDate(context),
-                      child: Container(
-                        width: 350,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: const Color(0xFFE7E7E7),
+                      child: TextFormField(
+                        enabled: false,
+                        decoration: InputDecoration(
+                          hintText: _startRegisterDate == null
+                              ? 'Start register date'
+                              : _startRegisterDate.toString().split(' ')[0],
+                          hintStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: const Color.fromARGB(255, 230, 229, 229),
+                          border: InputBorder.none,
+                          enabledBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              borderSide: BorderSide.none),
+                          focusedBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              borderSide: BorderSide.none),
+                          errorBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              borderSide: BorderSide.none),
+                          focusedErrorBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              borderSide: BorderSide.none),
+                          disabledBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              borderSide: BorderSide.none),
                         ),
-                        child: Center(
-                          child: TextFormField(
-                            enabled: false,
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.only(top: 8, left: 20),
-                              border: InputBorder.none,
-                              hintText: _startRegisterDate == null
-                                  ? 'Start register date'
-                                  : _startRegisterDate.toString().split(' ')[0],
-                              hintStyle: const TextStyle(color: Colors.black),
-                            ),
-                            style: const TextStyle(color: Colors.black),
-                            validator: (value) {
-                              if (_startRegisterDate == null) {
-                                return 'Select start register date';
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
+                        style: const TextStyle(color: Colors.black),
+                        validator: (value) {
+                          if (_startRegisterDate == null) {
+                            return 'Select start register date';
+                          }
+                          return null;
+                        },
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
                     child: GestureDetector(
                       onTap: () => _selectEndRegisterDate(context),
-                      child: Container(
-                        width: 350,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: const Color(0xFFE7E7E7),
+                      child: TextFormField(
+                        enabled: false,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          filled: true,
+                          fillColor: const Color.fromARGB(255, 230, 229, 229),
+                          hintText: _endRegisterDate == null
+                              ? 'End register date'
+                              : _endRegisterDate.toString().split(' ')[0],
+                          hintStyle: const TextStyle(color: Colors.black),
+                          enabledBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              borderSide: BorderSide.none),
+                          focusedBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              borderSide: BorderSide.none),
+                          errorBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              borderSide: BorderSide.none),
+                          focusedErrorBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              borderSide: BorderSide.none),
+                          disabledBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              borderSide: BorderSide.none),
                         ),
-                        child: Center(
-                          child: TextFormField(
-                            enabled: false,
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.only(top: 8, left: 20),
-                              border: InputBorder.none,
-                              hintText: _endRegisterDate == null
-                                  ? 'End register date'
-                                  : _endRegisterDate.toString().split(' ')[0],
-                              hintStyle: const TextStyle(color: Colors.black),
-                            ),
-                            style: const TextStyle(color: Colors.black),
-                            validator: (value) {
-                              if (_endRegisterDate == null) {
-                                return 'Select end register date';
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
+                        style: const TextStyle(color: Colors.black),
+                        validator: (value) {
+                          if (_endRegisterDate == null) {
+                            return 'Select end register date';
+                          }
+                          return null;
+                        },
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
                     child: GestureDetector(
                       onTap: () => _selectEventDate(context),
-                      child: Container(
-                        width: 350,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: const Color(0xFFE7E7E7),
+                      child: TextFormField(
+                        enabled: false,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: _eventDate == null
+                              ? 'Event date'
+                              : _eventDate.toString().split(' ')[0],
+                          hintStyle: const TextStyle(color: Colors.black),
+                          filled: true,
+                          fillColor: const Color.fromARGB(255, 230, 229, 229),
+                          enabledBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              borderSide: BorderSide.none),
+                          focusedBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              borderSide: BorderSide.none),
+                          errorBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              borderSide: BorderSide.none),
+                          focusedErrorBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              borderSide: BorderSide.none),
+                          disabledBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              borderSide: BorderSide.none),
                         ),
-                        child: Center(
-                          child: TextFormField(
-                            enabled: false,
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.only(top: 8, left: 20),
-                              border: InputBorder.none,
-                              hintText: _eventDate == null
-                                  ? 'Event date'
-                                  : _eventDate.toString().split(' ')[0],
-                              hintStyle: const TextStyle(color: Colors.black),
-                            ),
-                            style: const TextStyle(color: Colors.black),
-                            validator: (value) {
-                              if (_eventDate == null) {
-                                return 'Select event date';
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
+                        style: const TextStyle(color: Colors.black),
+                        validator: (value) {
+                          if (_eventDate == null) {
+                            return 'Select event date';
+                          }
+                          return null;
+                        },
                       ),
                     ),
                   ),
@@ -217,9 +232,12 @@ class _MyRegisterState extends State<MyRegister> {
                       onPressed: () {
                         if (_formkey.currentState!.validate()) {
                           // Print the selected dates to the console
-                          print('Start Register Date: ${_startRegisterDate?.toString().split(' ')[0]}');
-                          print('End Register Date: ${_endRegisterDate?.toString().split(' ')[0]}');
-                          print('Event Date: ${_eventDate?.toString().split(' ')[0]}');
+                          print(
+                              'Start Register Date: ${_startRegisterDate?.toString().split(' ')[0]}');
+                          print(
+                              'End Register Date: ${_endRegisterDate?.toString().split(' ')[0]}');
+                          print(
+                              'Event Date: ${_eventDate?.toString().split(' ')[0]}');
                           // Perform form submission logic here
                         }
                       },

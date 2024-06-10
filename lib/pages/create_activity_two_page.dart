@@ -1,26 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:nampa_hub/src/widget.dart'; // Make sure this import is correct
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'ActivityCreation2',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.interTextTheme(),
-      ),
-      home: const CreateActivityTwoPage(),
-    );
-  }
-}
 
 final _formkey = GlobalKey<FormState>();
 
@@ -97,147 +76,157 @@ class _CreateActivityOnePageState extends State<CreateActivityTwoPage> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Center(
-                    child: Container(
-                      width: 350,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: const Color(0xFFE7E7E7),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: TextFormField(
+                      decoration: const InputDecoration(
+                        hintText: 'Amount participants ex. 10 people',
+                        border: InputBorder.none,
+                        filled: true,
+                        fillColor: Color.fromARGB(255, 230, 229, 229),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
                       ),
-                      child: Center(
-                        child: TextFormField(
-                            decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.only(left: 20),
-                              border: InputBorder.none,
-                              hintText: 'Amount participants ex. 10 people',
-                            ),
-                            validator: (amountParticipant) => amountParticipant!
-                                    .isEmpty
-                                ? 'Enter amount of participant'
-                                : RegExp(r"^\d+$").hasMatch(amountParticipant)
-                                    ? null
-                                    : 'Please put the number'),
-                      ),
+                      validator: (amountParticipant) =>
+                          amountParticipant!.isEmpty
+                              ? 'Enter amount of participant'
+                              : RegExp(r"^\d+$").hasMatch(amountParticipant)
+                                  ? null
+                                  : 'Please put the number'),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: TextFormField(
+                    decoration: const InputDecoration(
+                      hintText: 'Meeting Location ex. KMUTT Thonburi',
+                      border: InputBorder.none,
+                      filled: true,
+                      fillColor: Color.fromARGB(255, 230, 229, 229),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
                     ),
+                    validator: (meetLocate) {
+                      if (meetLocate == null || meetLocate.isEmpty) {
+                        return "Please enter meeting location";
+                      }
+                      return null;
+                    },
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Center(
-                    child: Container(
-                      width: 350,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: const Color(0xFFE7E7E7),
-                      ),
-                      child: Center(
-                        child: TextFormField(
-                          decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.only(left: 20),
-                            border: InputBorder.none,
-                            hintText: 'Meeting Location ex. KMUTT Thonburi',
-                          ),
-                          validator: (meetLocate) {
-                            if (meetLocate == null || meetLocate.isEmpty) {
-                              return "Please enter meeting location";
-                            }
-                            return null;
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: TextFormField(
+                    decoration: const InputDecoration(
+                      hintText: 'Location of event ex. KMUTT Thonburi',
+                      border: InputBorder.none,
+                      filled: true,
+                      fillColor: Color.fromARGB(255, 230, 229, 229),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                    ),
+                    validator: (eventLocate) {
+                      if (eventLocate == null || eventLocate.isEmpty) {
+                        return "Please enter event location";
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: TextFormField(
+                    decoration: const InputDecoration(
+                      hintText: 'Organize by ...',
+                      border: InputBorder.none,
+                      filled: true,
+                      fillColor: Color.fromARGB(255, 230, 229, 229),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                    ),
+                    validator: (organizeName) {
+                      if (organizeName == null || organizeName.isEmpty) {
+                        return "Please enter your organize";
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: TextFormField(
+                    controller: _goalController,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Reward (Optional)',
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: IconButton(
+                          onPressed: () {
+                            _addGoal(_goalController.text);
+                            _goalController.clear();
                           },
+                          icon: const Icon(Icons.add_circle),
+                          color: const Color(0xFF1B8900),
                         ),
                       ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Center(
-                    child: Container(
-                      width: 350,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: const Color(0xFFE7E7E7),
-                      ),
-                      child: Center(
-                        child: TextFormField(
-                          decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.only(left: 20),
-                            border: InputBorder.none,
-                            hintText: 'Location of event ex. KMUTT Thonburi',
-                          ),
-                          validator: (eventLocate) {
-                            if (eventLocate == null || eventLocate.isEmpty) {
-                              return "Please enter event location";
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Center(
-                    child: Container(
-                      width: 350,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: const Color(0xFFE7E7E7),
-                      ),
-                      child: Center(
-                        child: TextFormField(
-                          decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.only(left: 20),
-                            border: InputBorder.none,
-                            hintText: 'Organize by ...',
-                          ),
-                          validator: (organizeName) {
-                            if (organizeName == null || organizeName.isEmpty) {
-                              return "Please enter your organize";
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Center(
-                    child: Container(
-                      width: 350,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: const Color(0xFFE7E7E7),
-                      ),
-                      child: Center(
-                        child: TextFormField(
-                          controller: _goalController,
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.only(left: 20, top: 13),
-                            border: InputBorder.none,
-                            hintText: 'Reward (Optional)',
-                            suffixIcon: Padding(
-                              padding: const EdgeInsets.only(right: 6),
-                              child: IconButton(
-                                onPressed: () {
-                                  _addGoal(_goalController.text);
-                                  _goalController.clear();
-                                },
-                                icon: const Icon(Icons.add_circle),
-                                color: const Color(0xFF1B8900),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                      filled: true,
+                      fillColor: const Color.fromARGB(255, 230, 229, 229),
+                      enabledBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      errorBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedErrorBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
                     ),
                   ),
                 ),
@@ -362,31 +351,36 @@ class _CreateActivityOnePageState extends State<CreateActivityTwoPage> {
                 ),
                 if (currentOption == options[0])
                   Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Center(
-                      child: Container(
-                        width: 350,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: const Color(0xFFE7E7E7),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
+                    child: TextFormField(
+                        decoration: const InputDecoration(
+                          hintText: 'Amount of Donation',
+                          border: InputBorder.none,
+                          filled: true,
+                          fillColor: Color.fromARGB(255, 230, 229, 229),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(7)),
+                              borderSide: BorderSide.none),
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(7)),
+                              borderSide: BorderSide.none),
+                          errorBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(7)),
+                              borderSide: BorderSide.none),
+                          focusedErrorBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(7)),
+                              borderSide: BorderSide.none),
                         ),
-                        child: Center(
-                          child: TextFormField(
-                              decoration: const InputDecoration(
-                                contentPadding: EdgeInsets.only(left: 20),
-                                border: InputBorder.none,
-                                hintText: 'Amount of Donation',
-                              ),
-                              validator: (amountDonation) =>
-                                  amountDonation!.isEmpty
-                                      ? "Please enter amount of donation"
-                                      : RegExp(r"^\d+$").hasMatch(amountDonation)
-                                          ? null
-                                          : 'Please enter valid input'),
-                        ),
-                      ),
-                    ),
+                        validator: (amountDonation) => amountDonation!.isEmpty
+                            ? "Please enter amount of donation"
+                            : RegExp(r"^\d+$").hasMatch(amountDonation)
+                                ? null
+                                : 'Please enter valid input'),
                   ),
 
                 const SizedBox(height: 10),

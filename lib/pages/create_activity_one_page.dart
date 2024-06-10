@@ -1,26 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:nampa_hub/src/widget.dart'; // Make sure this import is correct
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'ActivityCreation',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.interTextTheme(),
-      ),
-      home: const CreateActivityOnePage(),
-    );
-  }
-}
 
 final _formkey = GlobalKey<FormState>();
 
@@ -97,88 +76,94 @@ class _CreateActivityOnePageState extends State<CreateActivityOnePage> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Center(
-                    child: Container(
-                      width: 350,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: const Color(0xFFE7E7E7),
-                      ),
-                      child: Center(
-                        child: TextFormField(
-                          decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.only(left: 20),
-                            border: InputBorder.none,
-                            hintText: 'Activity Title',
-                          ),
-                          validator: (activityName) {
-                            if (activityName == null || activityName.isEmpty) {
-                              return "Please enter activity name";
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: TextFormField(
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Activity Title',
+                      filled: true,
+                      fillColor: Color.fromARGB(255, 230, 229, 229),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
                     ),
+                    validator: (activityName) {
+                      if (activityName == null || activityName.isEmpty) {
+                        return "Please enter activity name";
+                      }
+                      return null;
+                    },
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Center(
-                    child: Container(
-                      width: 350,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: const Color(0xFFE7E7E7),
-                      ),
-                      child: Center(
-                        child: TextFormField(
-                          decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.only(left: 20),
-                            border: InputBorder.none,
-                            hintText: 'Email',
-                          ),
-                          validator: (email) => email!.isEmpty
-                              ? 'Enter your Email'
-                              : RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                                      .hasMatch(email)
-                                  ? null
-                                  : 'Enter a Valid Email',
-                        ),
-                      ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: TextFormField(
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Contact Email',
+                      filled: true,
+                      fillColor: Color.fromARGB(255, 230, 229, 229),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
                     ),
+                    validator: (email) => email!.isEmpty
+                        ? 'Enter your Email'
+                        : RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                .hasMatch(email)
+                            ? null
+                            : 'Enter a Valid Email',
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Center(
-                    child: Container(
-                      width: 350,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: const Color(0xFFE7E7E7),
-                      ),
-                      child: Center(
-                        child: TextFormField(
-                          controller: _goalController,
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.only(left: 20, top: 13),
-                            border: InputBorder.none,
-                            hintText: 'Goals',
-                            suffixIcon: IconButton(
-                              onPressed: () {
-                                _addGoal(_goalController.text);
-                                _goalController.clear();
-                              },
-                              icon: Icon(Icons.add_circle),
-                              color: Color(0xFF1B8900),
-                            ),
-                          ),
-                        ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: TextFormField(
+                    controller: _goalController,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Goals',
+                      filled: true,
+                      fillColor: const Color.fromARGB(255, 230, 229, 229),
+                      enabledBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      errorBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedErrorBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          _addGoal(_goalController.text);
+                          _goalController.clear();
+                        },
+                        icon: const Icon(Icons.add_circle),
+                        color: const Color(0xFF1B8900),
                       ),
                     ),
                   ),
@@ -237,31 +222,34 @@ class _CreateActivityOnePageState extends State<CreateActivityOnePage> {
                   }),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Container(
-                    width: 350,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: const Color(0xFFE7E7E7),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: TextFormField(
+                    maxLines: null,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Description .....',
+                      filled: true,
+                      fillColor: Color.fromARGB(255, 230, 229, 229),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TextFormField(
-                        maxLines: null,
-                        decoration: const InputDecoration(
-                          contentPadding: EdgeInsets.only(left: 10),
-                          border: InputBorder.none,
-                          hintText: 'Description .....',
-                        ),
-                        validator: (activityName) {
-                          if (activityName == null || activityName.isEmpty) {
-                            return "Please enter activity name";
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
+                    validator: (activityName) {
+                      if (activityName == null || activityName.isEmpty) {
+                        return "Please provide description of your activity";
+                      }
+                      return null;
+                    },
                   ),
                 ),
 
@@ -351,35 +339,37 @@ class _CreateActivityOnePageState extends State<CreateActivityOnePage> {
                     // Add more options here if needed
                   ],
                 ),
-                if(currentOption == options[2])
+                if (currentOption == options[2])
                   Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Center(
-                    child: Container(
-                      width: 350,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: const Color(0xFFE7E7E7),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
+                    child: TextFormField(
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Other ...',
+                        filled: true,
+                        fillColor: Color.fromARGB(255, 230, 229, 229),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
                       ),
-                      child: Center(
-                        child: TextFormField(
-                          decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.only(left: 20),
-                            border: InputBorder.none,
-                            hintText: 'Other...',
-                          ),
-                          validator: (activityName) {
-                            if (activityName == null || activityName.isEmpty) {
-                              return "Please enter activity name";
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
+                      validator: (activityName) {
+                        if (activityName == null || activityName.isEmpty) {
+                          return "Please clarify you activity type";
+                        }
+                        return null;
+                      },
                     ),
                   ),
-                ),
 
                 const SizedBox(height: 10),
                 SizedBox(
