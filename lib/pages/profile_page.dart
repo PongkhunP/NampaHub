@@ -1,9 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:nampa_hub/mid/auth.dart';
+import 'package:nampa_hub/auth/login.dart';
 import 'package:nampa_hub/src/widget.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyProfilePage extends StatelessWidget {
   const MyProfilePage({super.key});
+
+  Future<void> logout(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    Navigator.pushReplacement(context, MaterialPageRoute(
+      builder: (context) {
+        return const AuthPage();
+      },
+    ));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +34,7 @@ class MyProfilePage extends StatelessWidget {
                 padding: EdgeInsets.only(top: 30),
                 child: ClipOval(
                   child: Image(
-                    image: AssetImage('images/Beach.jpg'),
+                    image: AssetImage('assets/images/Beach.jpg'),
                     width: 180,
                     height: 180,
                     fit: BoxFit.cover,
@@ -52,7 +64,7 @@ class MyProfilePage extends StatelessWidget {
               ),
             ),
             const Padding(
-              padding: EdgeInsets.only(right: 18,top: 10, bottom: 0),
+              padding: EdgeInsets.only(right: 18, top: 10, bottom: 0),
               child: Align(
                 alignment: Alignment.center,
                 child: Row(
@@ -78,7 +90,8 @@ class MyProfilePage extends StatelessWidget {
               padding: const EdgeInsets.all(30),
               child: Container(
                 height: 100, // Fixed height for the container
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
                   borderRadius: BorderRadius.circular(10),
@@ -146,8 +159,8 @@ class MyProfilePage extends StatelessWidget {
                 ),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
               child: Column(
                 children: [
                   ListTile(
@@ -161,9 +174,54 @@ class MyProfilePage extends StatelessWidget {
                     onTap: null,
                   ),
                   ListTile(
-                    leading: Icon(Icons.logout),
-                    title: Text('Log-out'),
-                    onTap: null,
+                    leading: const Icon(Icons.logout),
+                    title: const Text('Log-out'),
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            content: IntrinsicHeight(
+                              child: IntrinsicWidth(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text(
+                                          'Are you sure you want to logout?'),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 4, vertical: 4),
+                                          child: ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('No')),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 4, vertical: 4),
+                                          child: ElevatedButton(
+                                              onPressed: () {
+                                                logout(context);
+                                              },
+                                              child: const Text('Yes')),
+                                        )
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
                   ),
                   ListTile(
                     leading: Icon(Icons.delete, color: Colors.red),
