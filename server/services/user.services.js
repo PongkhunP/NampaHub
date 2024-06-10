@@ -1,16 +1,38 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const UserModel = require('../models/user.model');
+const pool = require('../configuration/db');
 
 class UserService{
-    static async registerUser(email , password)
+    static async registerUser(userDetails)
     {
+        let conn;
         try
         {
-            const saltRounds = 10;
-            const hashedPassword = await bcrypt.hash(password , saltRounds);
+            conn = await pool.getConnection();
+            await conn.beginTransaction();
 
-            return await UserModel.createUser(email , hashedPassword);
+            const saltRounds = 10;
+            const hashedPassword = await bcrypt.hash(userDetails.password , saltRounds);
+
+            const user_account = await UserModel.createUserAccount(userDetails.email , hashedPassword, conn);
+            const userId = user_account.insertId;
+
+            const user_personal = await UserModel.createUserPersonal(userDetails.firstname , userDetails.middlename, userDetails.lastname , userDetails.age, userDetails.phone, userId, conn);
+            
+            const user_location = await UserModel.createUserLocation(userDetails.country , userDetails.city , userId , conn);
+            
+            if(userDetails.company_name && userDetails.job)
+            {
+                const user_work = await UserModel.createUserWork(userDetails.company_name , userDetails.job , userId , conn);
+            }
+            
+            const startYear = new Date(userDetails.start_year, 0 ,1);
+            const endYear = new Date(userDetails.end_year, 0 , 1);
+            const user_edu = await UserModel.createUserEdu(userDetails.edu_name, startYear, endYear, userId , conn);
+            
+            await conn.commit(); 
+            return user_account;
         }
         catch(err)
         {
