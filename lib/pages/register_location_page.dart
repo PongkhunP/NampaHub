@@ -1,35 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:nampa_hub/mid/regis.dart';
+import 'package:nampa_hub/pages/register_workinfo_page.dart';
+import 'package:nampa_hub/src/user.dart';
 import 'package:nampa_hub/src/widget.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyRegisterLocation extends StatefulWidget {
+  final User user;
+  const MyRegisterLocation({super.key, required this.user});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Registration',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.interTextTheme(),
-      ),
-      home: const MyRegisterWorkOne(),
-    );
-  }
+  State<MyRegisterLocation> createState() => _MyRegisterState();
 }
 
-class MyRegisterWorkOne extends StatefulWidget {
-  const MyRegisterWorkOne({super.key});
-
-  @override
-  State<MyRegisterWorkOne> createState() => _MyRegisterState();
-}
-
-class _MyRegisterState extends State<MyRegisterWorkOne> {
+class _MyRegisterState extends State<MyRegisterLocation> {
   String? selectedCountry;
   String? selectedCity;
   List<String> listCity = [];
@@ -43,10 +26,19 @@ class _MyRegisterState extends State<MyRegisterWorkOne> {
     'China': ['Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen'],
   };
 
-  void _validateAndSubmit() {
+  void _validateAndSend() {
     if (_formKey.currentState?.validate() ?? false) {
       // Perform your submission logic here
-      print("Form is valid");
+      widget.user.setCountry(selectedCountry!);
+      widget.user.setCity(selectedCity!);
+      widget.user.printDetails();
+      Navigator.push(context, MaterialPageRoute(
+        builder: (context) {
+          return RegisWorkEdu(
+            user: widget.user,
+          );
+        },
+      ));
     } else {
       print("Form is invalid");
     }
@@ -85,19 +77,25 @@ class _MyRegisterState extends State<MyRegisterWorkOne> {
                   ),
                   const SizedBox(height: 20),
                   // Country Dropdown Widget
-                  Container(
-                    width: 350,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE7E7E7),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
                     child: DropdownButtonFormField<String>(
                       decoration: const InputDecoration(
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        focusedErrorBorder: InputBorder.none,
+                        filled: true,
+                        fillColor: Color.fromARGB(255, 230, 229, 229),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
                       ),
                       hint: const Text("Country"),
                       dropdownColor: Colors.grey,
@@ -126,21 +124,26 @@ class _MyRegisterState extends State<MyRegisterWorkOne> {
                       }).toList(),
                     ),
                   ),
-                  const SizedBox(height: 15),
                   // City Dropdown Widget
-                  Container(
-                    width: 350,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE7E7E7),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
                     child: DropdownButtonFormField<String>(
                       decoration: const InputDecoration(
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        focusedErrorBorder: InputBorder.none,
+                        filled: true,
+                        fillColor: Color.fromARGB(255, 230, 229, 229),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
                       ),
                       hint: const Text("City"),
                       dropdownColor: Colors.grey,
@@ -149,7 +152,8 @@ class _MyRegisterState extends State<MyRegisterWorkOne> {
                       isExpanded: true,
                       value: selectedCity,
                       validator: (value) {
-                        if (selectedCountry == null && (value == null || value.isEmpty)) {
+                        if (selectedCountry == null &&
+                            (value == null || value.isEmpty)) {
                           return 'Please select your city';
                         }
                         return null;
@@ -172,7 +176,7 @@ class _MyRegisterState extends State<MyRegisterWorkOne> {
                     width: 350,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: _validateAndSubmit,
+                      onPressed: _validateAndSend,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1B8900),
                         foregroundColor: Colors.white,
@@ -181,7 +185,7 @@ class _MyRegisterState extends State<MyRegisterWorkOne> {
                         ),
                       ),
                       child: const Text(
-                        'Sign up',
+                        'Next',
                         style: TextStyle(fontSize: 18),
                       ),
                     ),
