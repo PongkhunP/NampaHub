@@ -1,39 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
-import 'dart:html' as html;
-
 import 'package:nampa_hub/src/widget.dart'; // Make sure this import is correct
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyUploadActivityImages extends StatefulWidget {
+  const MyUploadActivityImages({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Upload Images',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.interTextTheme(),
-      ),
-      home: const MyUploadImages(),
-    );
-  }
+  MyUploadActivityImagesState createState() => MyUploadActivityImagesState();
 }
 
-class MyUploadImages extends StatefulWidget {
-  const MyUploadImages({super.key});
-
-  @override
-  _MyUploadImagesState createState() => _MyUploadImagesState();
-}
-
-class _MyUploadImagesState extends State<MyUploadImages> {
+class MyUploadActivityImagesState extends State<MyUploadActivityImages> {
   Uint8List? _imageData;
 
   Future<void> _pickImage() async {

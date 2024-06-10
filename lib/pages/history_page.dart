@@ -1,35 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:nampa_hub/src/widget.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'History',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.interTextTheme(),
-      ),
-      home: const MyHistoryPage(),
-    );
-  }
-}
 
 class MyHistoryPage extends StatefulWidget {
   const MyHistoryPage({super.key});
 
   @override
-  _MyHistoryPageState createState() => _MyHistoryPageState();
+  MyHistoryPageState createState() => MyHistoryPageState();
 }
 
-class _MyHistoryPageState extends State<MyHistoryPage> {
+class MyHistoryPageState extends State<MyHistoryPage> {
   String? _activeButtonLabel;
 
   final List<String> activityNames = [
@@ -49,7 +28,7 @@ class _MyHistoryPageState extends State<MyHistoryPage> {
     'Colorado River',
     'Carlsbad Caverns',
   ];
-  
+
   final List<String> participations = [
     '12/20',
     '10/15',
@@ -67,11 +46,13 @@ class _MyHistoryPageState extends State<MyHistoryPage> {
     'On going',
     'Created',
   ];
- @override
+  @override
   void initState() {
     super.initState();
-    _activeButtonLabel = 'On going'; // Automatically select 'On going' on page load
+    _activeButtonLabel =
+        'On going'; // Automatically select 'On going' on page load
   }
+
   List<int> getFilteredIndexes() {
     if (_activeButtonLabel == null) {
       return List<int>.generate(activityNames.length, (index) => index);
@@ -140,7 +121,8 @@ class _MyHistoryPageState extends State<MyHistoryPage> {
                 itemBuilder: (BuildContext context, int index) {
                   int activityIndex = filteredIndexes[index];
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 16, left: 10, right: 10),
+                    padding:
+                        const EdgeInsets.only(bottom: 16, left: 10, right: 10),
                     child: ActivityHistoryCard(
                       activityName: activityNames[activityIndex],
                       location: locations[activityIndex],
@@ -164,30 +146,33 @@ class CustomButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   const CustomButton({
-    Key? key,
+    super.key,
     required this.label,
     required this.isActive,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return OutlinedButton(
       onPressed: onPressed,
       style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+        backgroundColor: MaterialStateProperty.resolveWith<Color>(
+            (Set<MaterialState> states) {
           if (isActive) {
             return Colors.green;
           }
           return Colors.white;
         }),
-        foregroundColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+        foregroundColor: MaterialStateProperty.resolveWith<Color>(
+            (Set<MaterialState> states) {
           if (isActive) {
             return Colors.white;
           }
           return Colors.black;
         }),
-        side: WidgetStateProperty.all<BorderSide>(const BorderSide(color: Colors.black)),
+        side: MaterialStateProperty.all<BorderSide>(
+            const BorderSide(color: Colors.black)),
       ),
       child: Text(label),
     );
