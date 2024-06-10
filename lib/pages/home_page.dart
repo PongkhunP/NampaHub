@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:nampa_hub/pages/profile_page.dart';
 import 'package:nampa_hub/src/widget.dart';
 
 class MyHomePage extends StatelessWidget {
-  
   MyHomePage({super.key});
 
   final List<String> activityNames = [
@@ -22,14 +22,34 @@ class MyHomePage extends StatelessWidget {
     'Colorado River',
     'Carlsbad Caverns',
   ];
-  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Center(
-          child: Logo(),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Spacer(
+              flex: 3,
+            ),
+            const Center(
+              child: Logo(),
+            ),
+            const Spacer(
+              flex: 2,
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (context) {
+                    return const MyProfilePage();
+                  },
+                ));
+              },
+              child: const Icon(Icons.person),
+            ),
+          ],
         ),
         backgroundColor: const Color(0xFF1B8900),
       ),
@@ -115,9 +135,7 @@ class MyHomePage extends StatelessWidget {
                   ],
                 ),
                 IconButton(
-                  onPressed: () {
-                    
-                  },
+                  onPressed: () {},
                   icon: const CircleAvatar(
                     backgroundColor: Colors.blue,
                     radius: 15,
@@ -129,28 +147,46 @@ class MyHomePage extends StatelessWidget {
                 ),
               ],
             ),
-     Expanded(
-              child: ListView.builder(
-                itemCount: (activityNames.length / 2).ceil(),
-                itemBuilder: (BuildContext context, int index) {
-                  int startIndex = index * 2;
-                  int endIndex = (index * 2 + 2).clamp(0, activityNames.length);
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  double height = 230;
+                  double width = 180;
+                  int itemsPerRow = 2;
 
-                 return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(
-                        endIndex - startIndex,
-                        (subIndex) => Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: ActivityCard(
-                            activityName: activityNames[startIndex + subIndex],
-                            location: locations[startIndex + subIndex],
+                  if (constraints.maxWidth < 600) {
+                    height = 250;
+                    width = 300;
+                    itemsPerRow = 1;
+                  }
+
+                  return ListView.builder(
+                    itemCount: (activityNames.length / itemsPerRow).ceil(),
+                    itemBuilder: (BuildContext context, int index) {
+                      int startIndex = index * itemsPerRow;
+                      int endIndex = (index * itemsPerRow + itemsPerRow)
+                          .clamp(0, activityNames.length);
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: List.generate(
+                            endIndex - startIndex,
+                            (subIndex) => Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ActivityCard(
+                                activityName:
+                                    activityNames[startIndex + subIndex],
+                                location: locations[startIndex + subIndex],
+                                cardHeight: height,
+                                cardWidth: width,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   );
                 },
               ),
