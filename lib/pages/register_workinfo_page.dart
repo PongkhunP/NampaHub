@@ -1,47 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:nampa_hub/src/user.dart';
 import 'package:nampa_hub/src/widget.dart';
-import  'package:nampa_hub/pages/register_edu_page.dart';
+import 'package:nampa_hub/pages/register_edu_page.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Registration',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.interTextTheme(),
-      ),
-      home: const MyRegisterWorkTwo(),
-    );
-  }
-}
-
-class MyRegisterWorkTwo extends StatefulWidget {
-  const MyRegisterWorkTwo({Key? key}) : super(key: key);
+class MyRegisterWorkInfo extends StatefulWidget {
+  final VoidCallback showEduregisPage;
+  final User user;
+  const MyRegisterWorkInfo(
+      {super.key, required this.user, required this.showEduregisPage});
 
   @override
-  State<MyRegisterWorkTwo> createState() => _MyRegisterState();
+  State<MyRegisterWorkInfo> createState() => _MyRegisterState();
 }
 
-class _MyRegisterState extends State<MyRegisterWorkTwo> {
+class _MyRegisterState extends State<MyRegisterWorkInfo> {
+  final TextEditingController _companyNameController = TextEditingController();
   String? selectedJob;
   bool isAgreed = false;
   List<String> joblist = ['Student', 'Police', 'Teacher', 'Marine'];
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  void _validateAndSubmit() {
+  void _validateAndRegister() {
     if (_formKey.currentState?.validate() ?? false) {
+      widget.user.setCompanyName(_companyNameController.text);
+      widget.user.setJob(selectedJob!);
       if (isAgreed) {
-        // Perform your submission logic here
-        print("Form is valid and terms are agreed");
+        registerUser();
       } else {
         print("You must agree to the terms and conditions");
       }
@@ -49,6 +34,8 @@ class _MyRegisterState extends State<MyRegisterWorkTwo> {
       print("Form is invalid");
     }
   }
+
+  void registerUser() async {}
 
   void _showTermsDialog() {
     showDialog(
@@ -98,12 +85,12 @@ class _MyRegisterState extends State<MyRegisterWorkTwo> {
     );
   }
 
-  void _navigateToStudentForm() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const MyRegisterEdu()),
-    );
-  }
+  // void _navigateToStudentForm() {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(builder: (context) => const MyRegisterEdu()),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -140,43 +127,51 @@ class _MyRegisterState extends State<MyRegisterWorkTwo> {
                   // Company name TextField
                   Padding(
                     padding: const EdgeInsets.all(10),
-                    child: Container(
-                      width: 350,
-                      height: 60,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: const Color(0xFFE7E7E7)),
-                      child: Center(
-                        child: TextFormField(
-                            decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.only(top: 8, left: 10),
-                              border: InputBorder.none,
-                              hintText: 'Company name',
-                            ),
-                            validator: (companyName) => companyName!.isEmpty
-                                ? 'Enter your company name'
-                                : RegExp('[a-zA-Z]').hasMatch(companyName)
-                                    ? null
-                                    : 'Enter a valid company name'),
+                    child: TextFormField(
+                      decoration: const InputDecoration(
+                        hintText: 'Company name',
+                        filled: true,
+                        fillColor: Color.fromARGB(255, 230, 229, 229),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
                       ),
+                      validator: (companyName) => companyName!.isEmpty
+                          ? 'Enter your company name'
+                          : RegExp('[a-zA-Z]').hasMatch(companyName)
+                              ? null
+                              : 'Enter a valid company name',
+                      controller: _companyNameController,
                     ),
                   ),
-                  const SizedBox(height: 15),
                   // Job Dropdown Widget
-                  Container(
-                    width: 350,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE7E7E7),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.all(10),
                     child: DropdownButtonFormField<String>(
                       decoration: const InputDecoration(
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        focusedErrorBorder: InputBorder.none,
+                        filled: true,
+                        fillColor: Color.fromARGB(255, 230, 229, 229),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
                       ),
                       hint: const Text("Job"),
                       dropdownColor: Colors.grey,
@@ -204,7 +199,9 @@ class _MyRegisterState extends State<MyRegisterWorkTwo> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const SizedBox(height: 270), // Added space to push terms closer to the button
+                  const SizedBox(
+                      height:
+                          270), // Added space to push terms closer to the button
                   // Terms and Conditions Checkbox
                   Center(
                     child: Column(
@@ -233,7 +230,6 @@ class _MyRegisterState extends State<MyRegisterWorkTwo> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.red,
-                        
                                 ),
                               ),
                             ),
@@ -249,13 +245,12 @@ class _MyRegisterState extends State<MyRegisterWorkTwo> {
                                 style: TextStyle(fontSize: 16),
                               ),
                               GestureDetector(
-                                onTap: _navigateToStudentForm,
+                                onTap: widget.showEduregisPage,
                                 child: const Text(
                                   'Student form',
                                   style: TextStyle(
                                     fontSize: 16,
                                     color: Colors.green,
-                                  
                                   ),
                                 ),
                               ),
@@ -270,14 +265,14 @@ class _MyRegisterState extends State<MyRegisterWorkTwo> {
                     width: 350,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: isAgreed ? _validateAndSubmit : null,
+                      onPressed: isAgreed ? _validateAndRegister : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isAgreed
-                            ? const Color(0xFF1B8900)
-                            : Colors.grey,
+                        backgroundColor:
+                            isAgreed ? const Color(0xFF1B8900) : Colors.grey,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10), // Circle shape
+                          borderRadius:
+                              BorderRadius.circular(10), // Circle shape
                         ),
                       ),
                       child: const Text(
