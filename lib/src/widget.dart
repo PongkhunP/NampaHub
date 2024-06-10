@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class Logo extends StatelessWidget {
-  const Logo({Key? key}) : super(key: key);
+  const Logo({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,12 +20,16 @@ class Logo extends StatelessWidget {
 class ActivityCard extends StatelessWidget {
   final String activityName;
   final String location;
+  final double cardWidth;
+  final double cardHeight;
 
-  const ActivityCard({
-    Key? key,
-    required this.activityName,
-    required this.location,
-  }) : super(key: key);
+  const ActivityCard(
+      {Key? key,
+      required this.activityName,
+      required this.location,
+      required this.cardHeight,
+      required this.cardWidth})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -42,20 +46,20 @@ class ActivityCard extends StatelessWidget {
           ),
         ],
       ),
-      height: 230, // Adjust the height as needed
-      width: 180,
+      height: cardHeight, // Adjust the height as needed
+      width: cardWidth,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: Container(
-              height: 150,
-              width: 180,
+              height: cardHeight - 80,
+              width: cardWidth,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 image: const DecorationImage(
-                  image: AssetImage('images/Beach.jpg'),
+                  image: AssetImage('assets/images/Beach.jpg'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -141,7 +145,8 @@ class ActivityHistoryCard extends StatelessWidget {
                 children: [
                   Text(
                     activityName,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 5),
                   Text(
@@ -150,10 +155,13 @@ class ActivityHistoryCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 5),
                   const Padding(
-                    padding: EdgeInsets.only(top:30),
+                    padding: EdgeInsets.only(top: 30),
                     child: Text(
                       'Participation',
-                      style: TextStyle(fontSize: 15, color: Colors.black54, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                   Text(
@@ -169,4 +177,3 @@ class ActivityHistoryCard extends StatelessWidget {
     );
   }
 }
-
