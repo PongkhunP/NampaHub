@@ -27,12 +27,15 @@ class UserService{
                 const user_work = await UserModel.createUserWork(userDetails.company_name , userDetails.job , userId , conn);
             }
             
-            const startYear = new Date(userDetails.start_year, 0 ,1);
-            const endYear = new Date(userDetails.end_year, 0 , 1);
-            const user_edu = await UserModel.createUserEdu(userDetails.edu_name, startYear, endYear, userId , conn);
+            if(userDetails.start_year && userDetails.end_year && userDetails.edu_name)
+            {
+                const startYear = new Date(userDetails.start_year, 0 ,1);
+                const endYear = new Date(userDetails.end_year, 0 , 1);
+                const user_edu = await UserModel.createUserEdu(userDetails.edu_name, startYear, endYear, userId , conn);
+            }
             
             await conn.commit(); 
-            return user_account;
+            return { insertId: userId, ...user_account };
         }
         catch(err)
         {
