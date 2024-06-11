@@ -105,4 +105,23 @@ class User {
     print('Start Date: $startDate');
     print('End Date: $endDate');
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'email': email,
+      'password': password,
+      'firstname': firstname,
+      'lastname': lastname,
+      'middlename': middlename,
+      'age': age.toString(),
+      'phone': phone,
+      'country': country,
+      'city': city,
+      'company_name': companyName,
+      'job': job,
+      'edu_name': instituteName,
+      'start_year': startDate,
+      'end_year': endDate,
+    };
+  }
 }
