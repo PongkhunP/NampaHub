@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:nampa_hub/pages/activity_details_page.dart';
+import 'package:nampa_hub/pages/create_activity_one_page.dart';
 import 'package:nampa_hub/pages/profile_page.dart';
 import 'package:nampa_hub/src/widget.dart';
 
@@ -135,7 +137,13 @@ class MyHomePage extends StatelessWidget {
                   ],
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (context) {
+                        return const CreateActivityOnePage();
+                      },
+                    ));
+                  },
                   icon: const CircleAvatar(
                     backgroundColor: Colors.blue,
                     radius: 15,
@@ -175,12 +183,21 @@ class MyHomePage extends StatelessWidget {
                             endIndex - startIndex,
                             (subIndex) => Padding(
                               padding: const EdgeInsets.only(right: 8),
-                              child: ActivityCard(
-                                activityName:
-                                    activityNames[startIndex + subIndex],
-                                location: locations[startIndex + subIndex],
-                                cardHeight: height,
-                                cardWidth: width,
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(
+                                    builder: (context) {
+                                      return const ActivityDetailsPage();
+                                    },
+                                  ));
+                                },
+                                child: ActivityCard(
+                                  activityName:
+                                      activityNames[startIndex + subIndex],
+                                  location: locations[startIndex + subIndex],
+                                  cardHeight: height,
+                                  cardWidth: width,
+                                ),
                               ),
                             ),
                           ),
