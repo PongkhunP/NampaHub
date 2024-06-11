@@ -1,13 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:nampa_hub/pages/home_page.dart';
+import '../src/config.dart';
 import 'package:nampa_hub/src/user.dart';
 import 'package:nampa_hub/src/widget.dart';
-import 'package:nampa_hub/pages/register_edu_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyRegisterWorkInfo extends StatefulWidget {
-  final VoidCallback showEduregisPage;
   final User user;
-  const MyRegisterWorkInfo(
-      {super.key, required this.user, required this.showEduregisPage});
+  const MyRegisterWorkInfo({super.key, required this.user});
 
   @override
   State<MyRegisterWorkInfo> createState() => _MyRegisterState();
@@ -17,6 +20,7 @@ class _MyRegisterState extends State<MyRegisterWorkInfo> {
   final TextEditingController _companyNameController = TextEditingController();
   String? selectedJob;
   bool isAgreed = false;
+  late SharedPreferences prefs;
   List<String> joblist = ['Student', 'Police', 'Teacher', 'Marine'];
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -24,9 +28,10 @@ class _MyRegisterState extends State<MyRegisterWorkInfo> {
   void _validateAndRegister() {
     if (_formKey.currentState?.validate() ?? false) {
       widget.user.setCompanyName(_companyNameController.text);
-      widget.user.setJob(selectedJob!);
+      widget.user.setJob(selectedJob ?? '');
       if (isAgreed) {
-        registerUser();
+        _registerUser();
+        print('Register successfully');
       } else {
         print("You must agree to the terms and conditions");
       }
@@ -35,7 +40,45 @@ class _MyRegisterState extends State<MyRegisterWorkInfo> {
     }
   }
 
-  void registerUser() async {}
+  void _registerUser() async {
+    try {
+      final response = await http.post(
+        Uri.parse(registration),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode(widget.user.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(response.body);
+        print('User registered successfully with response $jsonResponse');
+
+        var myToken = jsonResponse['token'];
+        prefs.setString('token', myToken);
+
+        if (mounted) {
+            Navigator.pushReplacement(context, MaterialPageRoute(
+              builder: (context) {
+                return MyHomePage();
+              },
+            ));
+          }
+      } else {
+        throw Exception('Failed to register user');
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initSharedPref();
+  }
+
+  void _initSharedPref() async {
+    prefs = await SharedPreferences.getInstance();
+  }
 
   void _showTermsDialog() {
     showDialog(
@@ -145,11 +188,14 @@ class _MyRegisterState extends State<MyRegisterWorkInfo> {
                             borderRadius: BorderRadius.all(Radius.circular(7)),
                             borderSide: BorderSide.none),
                       ),
-                      validator: (companyName) => companyName!.isEmpty
-                          ? 'Enter your company name'
-                          : RegExp('[a-zA-Z]').hasMatch(companyName)
-                              ? null
-                              : 'Enter a valid company name',
+                      validator: (companyName) {
+                        if (companyName!.isNotEmpty) {
+                          if (!RegExp('[a-zA-Z]').hasMatch(companyName)) {
+                            return 'Please enter valid company name';
+                          }
+                        }
+                        return null;
+                      },
                       controller: _companyNameController,
                     ),
                   ),
@@ -179,12 +225,6 @@ class _MyRegisterState extends State<MyRegisterWorkInfo> {
                       iconSize: 36,
                       isExpanded: true,
                       value: selectedJob,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please select a job';
-                        }
-                        return null;
-                      },
                       onChanged: (newValue) {
                         setState(() {
                           selectedJob = newValue;
@@ -235,28 +275,7 @@ class _MyRegisterState extends State<MyRegisterWorkInfo> {
                             ),
                           ],
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text(
-                                'you are student? ',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              GestureDetector(
-                                onTap: widget.showEduregisPage,
-                                child: const Text(
-                                  'Student form',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.green,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        
                       ],
                     ),
                   ),
@@ -278,6 +297,28 @@ class _MyRegisterState extends State<MyRegisterWorkInfo> {
                       child: const Text(
                         'Sign up',
                         style: TextStyle(fontSize: 18),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: 350,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: isAgreed ? _validateAndRegister : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(10), // Circle shape
+                        ),
+                      ),
+                      child: Text(
+                        'Skip',
+                        style: TextStyle(
+                            fontSize: 18,
+                            color: !isAgreed ? Colors.grey : Colors.black),
                       ),
                     ),
                   ),
