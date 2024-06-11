@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:nampa_hub/pages/create_activity_two_page.dart';
+import 'package:nampa_hub/src/activity.dart';
 import 'package:nampa_hub/src/widget.dart'; // Make sure this import is correct
 
 final _formkey = GlobalKey<FormState>();
@@ -16,6 +18,33 @@ class _CreateActivityOnePageState extends State<CreateActivityOnePage> {
   String currentOption = options[0];
   final List<TextEditingController> _goalControllers = [];
   final TextEditingController _goalController = TextEditingController();
+  final TextEditingController _activityTitleController =
+      TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+
+  void _validateAndSend() {
+    if (_formkey.currentState!.validate()) {
+      List<String> goals =
+          _goalControllers.map((controller) => controller.text).toList();
+      Activity activity = Activity(
+        title: _activityTitleController.text,
+        contactEmail: _emailController.text,
+        description: _descriptionController.text,
+        activityType: currentOption,
+        goals: goals,
+      );
+      activity.printDetails();
+
+      Navigator.push(context, MaterialPageRoute(
+        builder: (context) {
+          return CreateActivityTwoPage(
+            activity: activity,
+          );
+        },
+      ));
+    }
+  }
 
   @override
   void initState() {
@@ -103,6 +132,7 @@ class _CreateActivityOnePageState extends State<CreateActivityOnePage> {
                       }
                       return null;
                     },
+                    controller: _activityTitleController,
                   ),
                 ),
                 Padding(
@@ -133,6 +163,7 @@ class _CreateActivityOnePageState extends State<CreateActivityOnePage> {
                                 .hasMatch(email)
                             ? null
                             : 'Enter a Valid Email',
+                    controller: _emailController,
                   ),
                 ),
                 Padding(
@@ -250,11 +281,12 @@ class _CreateActivityOnePageState extends State<CreateActivityOnePage> {
                       }
                       return null;
                     },
+                    controller: _descriptionController,
                   ),
                 ),
 
                 const Padding(
-                  padding: EdgeInsets.only(left: 45),
+                  padding: EdgeInsets.only(left: 22, top: 20),
                   child: Row(
                     children: [
                       Text(
@@ -265,79 +297,81 @@ class _CreateActivityOnePageState extends State<CreateActivityOnePage> {
                   ),
                 ),
 
-                Row(
-                  children: [
-                    const SizedBox(width: 35),
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          currentOption = options[0];
-                        });
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Radio(
-                            value: options[0],
-                            groupValue: currentOption,
-                            onChanged: (value) {
-                              setState(() {
-                                currentOption = value.toString();
-                              });
-                            },
-                          ),
-                          const Text('Marine'),
-                        ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            currentOption = options[0];
+                          });
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Radio(
+                              value: options[0],
+                              groupValue: currentOption,
+                              onChanged: (value) {
+                                setState(() {
+                                  currentOption = value.toString();
+                                });
+                              },
+                            ),
+                            const Text('Marine'),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          currentOption = options[1];
-                        });
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Radio(
-                            value: options[1],
-                            groupValue: currentOption,
-                            onChanged: (value) {
-                              setState(() {
-                                currentOption = value.toString();
-                              });
-                            },
-                          ),
-                          const Text('Forest'),
-                        ],
+                      const SizedBox(width: 10),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            currentOption = options[1];
+                          });
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Radio(
+                              value: options[1],
+                              groupValue: currentOption,
+                              onChanged: (value) {
+                                setState(() {
+                                  currentOption = value.toString();
+                                });
+                              },
+                            ),
+                            const Text('Forest'),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          currentOption = options[2];
-                        });
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Radio(
-                            value: options[2],
-                            groupValue: currentOption,
-                            onChanged: (value) {
-                              setState(() {
-                                currentOption = value.toString();
-                              });
-                            },
-                          ),
-                          const Text('Other...'),
-                        ],
+                      const SizedBox(width: 10),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            currentOption = options[2];
+                          });
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Radio(
+                              value: options[2],
+                              groupValue: currentOption,
+                              onChanged: (value) {
+                                setState(() {
+                                  currentOption = value.toString();
+                                });
+                              },
+                            ),
+                            const Text('Other...'),
+                          ],
+                        ),
                       ),
-                    ),
-                    // Add more options here if needed
-                  ],
+                      // Add more options here if needed
+                    ],
+                  ),
                 ),
                 if (currentOption == options[2])
                   Padding(
@@ -376,11 +410,7 @@ class _CreateActivityOnePageState extends State<CreateActivityOnePage> {
                   width: 350,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: () {
-                      if (_formkey.currentState!.validate()) {
-                        // Handle form submission
-                      }
-                    },
+                    onPressed: _validateAndSend,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1B8900),
                       foregroundColor: Colors.white,
