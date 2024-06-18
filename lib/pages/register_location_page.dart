@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nampa_hub/mid/regis.dart';
-import 'package:nampa_hub/pages/register_workinfo_page.dart';
+import 'package:nampa_hub/pages/register_edu_page.dart';
 import 'package:nampa_hub/src/user.dart';
 import 'package:nampa_hub/src/widget.dart';
 
@@ -34,9 +33,7 @@ class _MyRegisterState extends State<MyRegisterLocation> {
       widget.user.printDetails();
       Navigator.push(context, MaterialPageRoute(
         builder: (context) {
-          return RegisWorkEdu(
-            user: widget.user,
-          );
+          return MyRegisterEdu( user: widget.user,);
         },
       ));
     } else {
