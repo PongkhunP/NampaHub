@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:nampa_hub/pages/create_activity_upload_images.dart';
+import 'package:nampa_hub/src/activity.dart';
 import 'package:nampa_hub/src/widget.dart';
 
 final _formkey = GlobalKey<FormState>();
 
 class CreateActivityDate extends StatefulWidget {
-  const CreateActivityDate({super.key});
+  final Activity activity;
+  const CreateActivityDate({super.key, required this.activity});
 
   @override
   State<CreateActivityDate> createState() => _CreateActivityDateState();
@@ -14,6 +17,35 @@ class _CreateActivityDateState extends State<CreateActivityDate> {
   DateTime? _startRegisterDate;
   DateTime? _endRegisterDate;
   DateTime? _eventDate;
+
+  void _validateAndSend() {
+    if (_formkey.currentState!.validate()) {
+      try {
+        ActivityDate activityDate = ActivityDate(
+          startRegisDate: _startRegisterDate!,
+          endRegisDate: _endRegisterDate!,
+          eventDate: _eventDate!,
+        );
+
+        widget.activity.setActivityDate(activityDate);
+
+        widget.activity.printDetails();
+
+        Navigator.push(context, MaterialPageRoute(
+          builder: (context) {
+            return MyUploadActivityImages(
+              activity: widget.activity,
+            );
+          },
+        ));
+      } catch (e) {
+        print('Error parsing input: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Invalid input, please check your entries.')),
+        );
+      }
+    }
+  }
 
   Future<void> _selectStartRegisterDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -229,18 +261,7 @@ class _CreateActivityDateState extends State<CreateActivityDate> {
                     width: 350,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: () {
-                        if (_formkey.currentState!.validate()) {
-                          // Print the selected dates to the console
-                          print(
-                              'Start Register Date: ${_startRegisterDate?.toString().split(' ')[0]}');
-                          print(
-                              'End Register Date: ${_endRegisterDate?.toString().split(' ')[0]}');
-                          print(
-                              'Event Date: ${_eventDate?.toString().split(' ')[0]}');
-                          // Perform form submission logic here
-                        }
-                      },
+                      onPressed: _validateAndSend,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1B8900),
                         foregroundColor: Colors.white,

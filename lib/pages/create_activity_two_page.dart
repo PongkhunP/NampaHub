@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
-
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:nampa_hub/pages/create_activity_date_page.dart';
 import 'package:nampa_hub/src/activity.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nampa_hub/src/widget.dart'; // Make sure this import is correct
@@ -19,6 +21,8 @@ List<String> options = ['Donate', 'No donate'];
 
 class _CreateActivityOnePageState extends State<CreateActivityTwoPage> {
   String donationOption = options[0];
+  double _donationAmount = 0;
+  int _participantsAmount = 0;
   final List<ActivityReward> _rewards = [];
 
   final TextEditingController _participantsController = TextEditingController();
@@ -27,10 +31,51 @@ class _CreateActivityOnePageState extends State<CreateActivityTwoPage> {
   final TextEditingController _eventLocationController =
       TextEditingController();
   final TextEditingController _organizerController = TextEditingController();
+  final TextEditingController _donationController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+  }
+
+  void _validateAndSend() {
+    if (_formkey.currentState!.validate()) {
+      // Use a try-catch block to handle any unexpected parsing errors
+      try {
+        _participantsAmount = int.parse(_participantsController.text);
+        _donationAmount = double.parse(_donationController.text);
+
+        ActivityLocation activityLocation = ActivityLocation(
+          eventLocation: _eventLocationController.text,
+          meetLocation: _meetingLocationController.text,
+        );
+
+        ActivitySupport activitySupport = ActivitySupport(
+          maxDonation: _donationAmount,
+          participants: _participantsAmount,
+          attendFee: donationOption == 'Donate' ? _donationAmount : 0,
+          budget: 0, // Set this value accordingly
+        );
+
+        widget.activity.setActivityLocation(activityLocation);
+        widget.activity.setActivitySupport(activitySupport);
+        widget.activity.setOrganizer(_organizerController.text);
+        widget.activity.setRewards(_rewards);
+        widget.activity.printDetails();
+
+        Navigator.push(context, MaterialPageRoute(
+          builder: (context) {
+            return CreateActivityDate(activity: widget.activity);
+          },
+        ));
+      } catch (e) {
+        // Handle parsing error, if any
+        print('Error parsing input: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Invalid input, please check your entries.')),
+        );
+      }
+    }
   }
 
   void _addReward() {
@@ -57,6 +102,11 @@ class _CreateActivityOnePageState extends State<CreateActivityTwoPage> {
               }
             }
 
+            String convertImageToBase64(XFile file) {
+              final bytes = File(file.path).readAsBytesSync();
+              return base64Encode(bytes);
+            }
+
             return AlertDialog(
               title: const Text('Add Reward'),
               content: SingleChildScrollView(
@@ -67,8 +117,7 @@ class _CreateActivityOnePageState extends State<CreateActivityTwoPage> {
                       controller: rewardNameController,
                       decoration: const InputDecoration(
                         hintText: 'Reward Name',
-                        border:
-                            OutlineInputBorder(), // Removes the underline border
+                        border: OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -76,9 +125,7 @@ class _CreateActivityOnePageState extends State<CreateActivityTwoPage> {
                       controller: rewardDescriptionController,
                       decoration: const InputDecoration(
                           hintText: 'Reward Description',
-                          border:
-                              OutlineInputBorder() // Removes the underline border
-                          ),
+                          border: OutlineInputBorder()),
                     ),
                     const SizedBox(height: 10),
                     GestureDetector(
@@ -113,11 +160,12 @@ class _CreateActivityOnePageState extends State<CreateActivityTwoPage> {
                       setState(() {
                         _rewards.add(ActivityReward(
                           name: rewardNameController.text,
-                          rewardImage: imagefile!.path,
+                          rewardImage: ActivityMedia(activityImage: convertImageToBase64(imagefile!)),
                           description: rewardDescriptionController.text,
                         ));
                       });
                       Navigator.of(context).pop();
+                      this.setState(() {});
                     } else {
                       // Show error if necessary fields are not filled
                     }
@@ -174,30 +222,39 @@ class _CreateActivityOnePageState extends State<CreateActivityTwoPage> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   child: TextFormField(
-                      decoration: const InputDecoration(
-                        hintText: 'Participants amount ex. 10 people',
-                        border: InputBorder.none,
-                        filled: true,
-                        fillColor: Color.fromARGB(255, 230, 229, 229),
-                        enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(7)),
-                            borderSide: BorderSide.none),
-                        focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(7)),
-                            borderSide: BorderSide.none),
-                        errorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(7)),
-                            borderSide: BorderSide.none),
-                        focusedErrorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(7)),
-                            borderSide: BorderSide.none),
-                      ),
-                      validator: (amountParticipant) =>
-                          amountParticipant!.isEmpty
-                              ? 'Enter amount of participant'
-                              : RegExp(r"^\d+$").hasMatch(amountParticipant)
-                                  ? null
-                                  : 'Please put the number'),
+                    decoration: const InputDecoration(
+                      hintText: 'Participants amount ex. 10 people',
+                      border: InputBorder.none,
+                      filled: true,
+                      fillColor: Color.fromARGB(255, 230, 229, 229),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                      focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(7)),
+                          borderSide: BorderSide.none),
+                    ),
+                    validator: (amountParticipant) {
+                      if (amountParticipant == null ||
+                          amountParticipant.isEmpty) {
+                        return 'Enter amount of participant';
+                      } else if (!RegExp(r"^\d+$")
+                          .hasMatch(amountParticipant)) {
+                        return 'Please enter a valid number';
+                      } else if (int.parse(amountParticipant) <= 0) {
+                        return 'Number of participants must be greater than zero';
+                      }
+                      return null;
+                    },
+                    controller: _participantsController,
+                    keyboardType: TextInputType.number,
+                  ),
                 ),
                 Padding(
                   padding:
@@ -227,6 +284,7 @@ class _CreateActivityOnePageState extends State<CreateActivityTwoPage> {
                       }
                       return null;
                     },
+                    controller: _meetingLocationController,
                   ),
                 ),
                 Padding(
@@ -257,6 +315,7 @@ class _CreateActivityOnePageState extends State<CreateActivityTwoPage> {
                       }
                       return null;
                     },
+                    controller: _eventLocationController,
                   ),
                 ),
                 Padding(
@@ -281,12 +340,6 @@ class _CreateActivityOnePageState extends State<CreateActivityTwoPage> {
                           borderRadius: BorderRadius.all(Radius.circular(7)),
                           borderSide: BorderSide.none),
                     ),
-                    validator: (organizeName) {
-                      if (organizeName == null || organizeName.isEmpty) {
-                        return "Please enter your organize";
-                      }
-                      return null;
-                    },
                   ),
                 ),
                 Padding(
@@ -328,88 +381,91 @@ class _CreateActivityOnePageState extends State<CreateActivityTwoPage> {
                     ),
                   ),
                 ),
-                // Padding(
-                //   padding:
-                //       const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                //   child: TextFormField(
-                //     controller: _rewardController,
-                //     decoration: InputDecoration(
-                //       border: InputBorder.none,
-                //       hintText: 'Reward (Optional)',
-                //       suffixIcon: Padding(
-                //         padding: const EdgeInsets.only(right: 6),
-                //         child: IconButton(
-                //           onPressed: () {
-                //             _addReward(_rewardController.text);
-                //             _rewardController.clear();
-                //           },
-                //           icon: const Icon(Icons.add),
-                //           color: const Color(0xFF1B8900),
-                //         ),
-                //       ),
-                //       filled: true,
-                //       fillColor: const Color.fromARGB(255, 230, 229, 229),
-                //       enabledBorder: const OutlineInputBorder(
-                //           borderRadius: BorderRadius.all(Radius.circular(7)),
-                //           borderSide: BorderSide.none),
-                //       focusedBorder: const OutlineInputBorder(
-                //           borderRadius: BorderRadius.all(Radius.circular(7)),
-                //           borderSide: BorderSide.none),
-                //       errorBorder: const OutlineInputBorder(
-                //           borderRadius: BorderRadius.all(Radius.circular(7)),
-                //           borderSide: BorderSide.none),
-                //       focusedErrorBorder: const OutlineInputBorder(
-                //           borderRadius: BorderRadius.all(Radius.circular(7)),
-                //           borderSide: BorderSide.none),
-                //     ),
-                //   ),
-                // ),
                 Column(
                   children: List.generate(_rewards.length, (index) {
+                    final reward = _rewards[index];
+                    Uint8List _imageFromBase64String(String base64String) {
+                      return base64Decode(base64String);
+                    }
+
                     return Padding(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
                       child: Center(
                         child: Container(
                           width: 350,
-                          height: 60,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
                             color: const Color(0xFFE7E7E7),
                           ),
-                          child: Center(
-                            child: Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 15.0),
-                                  child: Text(
-                                    '${index + 1}.',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                          child: Row(
+                            children: [
+                              // Left side image
+                              Container(
+                                width: 80,
+                                height: 80,
+                                margin: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: TextFormField(
-                                      maxLines: null,
-                                      decoration: InputDecoration(
-                                        contentPadding: const EdgeInsets.only(
-                                            left: 2, top: 10),
-                                        border: InputBorder.none,
-                                        hintText: 'Goal',
-                                        suffixIcon: IconButton(
-                                          onPressed: () => {},
-                                          icon: const Icon(Icons.remove_circle),
-                                          color: Colors.red,
+                                child: reward.rewardImage != null
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: Image.memory(
+                                          _imageFromBase64String(
+                                              reward.rewardImage!.activityImage!),
+                                          fit: BoxFit.cover,
+                                          width: 80,
+                                          height: 80,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.image,
+                                        size: 80,
+                                        color: Colors.grey,
+                                      ),
+                              ),
+                              // Right side text
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Reward name
+                                      Text(
+                                        reward.name!,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                    ),
+                                      const SizedBox(height: 5),
+                                      // Reward description
+                                      Text(
+                                        reward.description!,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                              // Delete button
+                              IconButton(
+                                icon: const Icon(Icons.remove_circle,
+                                    color: Colors.red),
+                                onPressed: () {
+                                  setState(() {
+                                    _rewards.removeAt(index);
+                                  });
+                                },
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -487,33 +543,33 @@ class _CreateActivityOnePageState extends State<CreateActivityTwoPage> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 10),
                     child: TextFormField(
-                        decoration: const InputDecoration(
-                          hintText: 'Amount of Donation',
-                          border: InputBorder.none,
-                          filled: true,
-                          fillColor: Color.fromARGB(255, 230, 229, 229),
-                          enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(7)),
-                              borderSide: BorderSide.none),
-                          focusedBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(7)),
-                              borderSide: BorderSide.none),
-                          errorBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(7)),
-                              borderSide: BorderSide.none),
-                          focusedErrorBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(7)),
-                              borderSide: BorderSide.none),
-                        ),
-                        validator: (amountDonation) => amountDonation!.isEmpty
-                            ? "Please enter amount of donation"
-                            : RegExp(r"^\d+$").hasMatch(amountDonation)
-                                ? null
-                                : 'Please enter valid input'),
+                      decoration: const InputDecoration(
+                        hintText: 'Amount of Donation',
+                        border: InputBorder.none,
+                        filled: true,
+                        fillColor: Color.fromARGB(255, 230, 229, 229),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                        focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(7)),
+                            borderSide: BorderSide.none),
+                      ),
+                      validator: (amountDonation) => amountDonation!.isEmpty
+                          ? "Please enter amount of donation"
+                          : RegExp(r"^\d+$").hasMatch(amountDonation)
+                              ? null
+                              : 'Please enter valid input',
+                      controller: _donationController,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                    ),
                   ),
 
                 const SizedBox(height: 10),
@@ -521,11 +577,7 @@ class _CreateActivityOnePageState extends State<CreateActivityTwoPage> {
                   width: 350,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: () {
-                      if (_formkey.currentState!.validate()) {
-                        // Handle form submission
-                      }
-                    },
+                    onPressed: _validateAndSend,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1B8900),
                       foregroundColor: Colors.white,

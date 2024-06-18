@@ -22,16 +22,20 @@ class _CreateActivityOnePageState extends State<CreateActivityOnePage> {
       TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _otherOptionController = TextEditingController();
 
   void _validateAndSend() {
     if (_formkey.currentState!.validate()) {
       List<String> goals =
           _goalControllers.map((controller) => controller.text).toList();
+      String activity_type = currentOption == options[2]
+          ? _otherOptionController.text
+          : currentOption;
       Activity activity = Activity(
         title: _activityTitleController.text,
         contactEmail: _emailController.text,
         description: _descriptionController.text,
-        activityType: currentOption,
+        activityType: activity_type,
         goals: goals,
       );
       activity.printDetails();
@@ -157,12 +161,19 @@ class _CreateActivityOnePageState extends State<CreateActivityOnePage> {
                           borderRadius: BorderRadius.all(Radius.circular(7)),
                           borderSide: BorderSide.none),
                     ),
-                    validator: (email) => email!.isEmpty
-                        ? 'Enter your Email'
-                        : RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                                .hasMatch(email)
-                            ? null
-                            : 'Enter a Valid Email',
+                    validator: (email) {
+                      // Allow null or empty
+                      if (email == null || email.isEmpty) {
+                        return null;
+                      }
+                      // Define email regex pattern
+                      final regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$');
+                      // Validate email
+                      if (!regex.hasMatch(email)) {
+                        return 'Enter a valid email address';
+                      }
+                      return null;
+                    },
                     controller: _emailController,
                   ),
                 ),
@@ -402,6 +413,7 @@ class _CreateActivityOnePageState extends State<CreateActivityOnePage> {
                         }
                         return null;
                       },
+                      controller: _otherOptionController,
                     ),
                   ),
 
