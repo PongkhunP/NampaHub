@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -20,16 +22,17 @@ class Logo extends StatelessWidget {
 class ActivityCard extends StatelessWidget {
   final String activityName;
   final String location;
+  final Uint8List imageBytes;
   final double cardWidth;
   final double cardHeight;
 
   const ActivityCard(
-      {Key? key,
+      {super.key,
       required this.activityName,
       required this.location,
+      required this.imageBytes,
       required this.cardHeight,
-      required this.cardWidth})
-      : super(key: key);
+      required this.cardWidth});
 
   @override
   Widget build(BuildContext context) {
@@ -58,13 +61,13 @@ class ActivityCard extends StatelessWidget {
               width: cardWidth,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                image: const DecorationImage(
-                  image: AssetImage('assets/images/Beach.jpg'),
-                  fit: BoxFit.cover,
+                image: DecorationImage(
+                  image: MemoryImage(imageBytes),
+                    fit: BoxFit.contain
+                  ),
                 ),
               ),
             ),
-          ),
           const SizedBox(height: 5),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),

@@ -36,7 +36,6 @@ class _LoginPageState extends State<LoginPage> {
         );
 
         var jsonResponse = jsonDecode(response.body);
-        print(response);
 
         if (jsonResponse['status'] && response.statusCode == 200) {
           var myToken = jsonResponse['token'];

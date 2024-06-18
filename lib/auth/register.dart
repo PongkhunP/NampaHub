@@ -21,7 +21,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void validateForm() {
     if (_formKey.currentState!.validate()) {
-      print("email : ${_emailController.text} , password : ${_passwordController.text}");
       Navigator.push(context, MaterialPageRoute(
         builder: (context) {
           return MyRegisterPersonalInfo(
