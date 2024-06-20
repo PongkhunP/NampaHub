@@ -69,3 +69,16 @@ exports.show_user = async(req,res,next) => {
   }
 }
 
+exports.delete_user = async(req,res,next) => {
+  try
+  {
+      const user_id = req.user._id;
+      const user_data = await Userservice.deleteUserAccount(user_id)
+      res.json({status :true , success : user_data});
+
+  }catch(err)
+  {
+      throw err;
+  }
+}
+

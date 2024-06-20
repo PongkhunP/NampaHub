@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const UserModel = require("../models/user.model");
 const pool = require("../configuration/db");
+const ActivityModel = require("../models/activity.model")
 const { fields } = require("../configuration/upload");
 
 class UserService {
@@ -88,9 +89,8 @@ class UserService {
     return jwt.sign(tokenData, secreteKey, { expiresIn: jwt_expired });
   }
 
-  static async showUserInfo(user_id)
-  {
-    let conn; 
+  static async showUserInfo(user_id) {
+    let conn;
     try {
       conn = await pool.getConnection();
       await conn.beginTransaction;
@@ -101,9 +101,14 @@ class UserService {
       const user_work = await UserModel.showUserWork(user_id, conn);
       const user_location = await UserModel.showUserlocation(user_id, conn);
 
-      
       await conn.commit();
-      const userInfo = {...user_account[0] , ...user_personal[0] , ...user_edu[0] , ...user_work[0] , ...user_location[0]}
+      const userInfo = {
+        ...user_account[0],
+        ...user_personal[0],
+        ...user_edu[0],
+        ...user_work[0],
+        ...user_location[0],
+      };
       // const userInfo = {user_account , user_personal , user_edu , user_work, user_location}
       return userInfo;
     } catch (error) {
@@ -111,8 +116,30 @@ class UserService {
     }
   }
 
+  static async deleteUserAccount(user_id)
+  {
+    let conn; 
+    try {
+      conn = await pool.getConnection();
+      await conn.beginTransaction;
 
-  
+      const activity_ids = await ActivityModel.getActivityOfUser(user_id, conn);
+      
+      console.log("Activity ids : " + activity_ids);
+      
+      for(const activity_id in activity_ids)
+      {
+        console.log("Activity ids : " + activity_id);
+        await UserModel.deleteActivityData(activity_id, conn);
+      }
+      const delete_user = await UserModel.deleteAllUserRelatedData(user_id, conn);
+
+      await conn.commit();
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 module.exports = UserService;
