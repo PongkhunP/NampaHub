@@ -127,6 +127,13 @@ class User {
     };
   }
 
+  void setRating(double rating){
+    this.rating = rating;
+  }
+
+
+
+
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
         email: json['email'],
