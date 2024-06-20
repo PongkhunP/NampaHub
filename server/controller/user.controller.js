@@ -85,15 +85,16 @@ exports.delete_user = async (req, res, next) => {
     throw err;
   }
   
-  exports.editUser = async (req, res, next) => {
-    try {
-      const userDetails = req.body;
-      const user_id = req.user.id;
+};
 
-      const user_update = await Userservice.EditUser(userDetails, user_id);
-      res.status(200).json({ status: true, success: "Edit user succesfully" });
-    } catch (error) {
-      throw error;
-    }
-  };
+exports.editUser = async (req, res, next) => {
+  try {
+    const userDetails = req.body;
+    const user_id = req.user.id;
+
+    const user_update = await Userservice.EditUser(userDetails, user_id);
+    res.status(200).json({ status: true, success: "Edit user succesfully" });
+  } catch (error) {
+    throw error;
+  }
 };
