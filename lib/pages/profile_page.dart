@@ -272,7 +272,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                           title: Text('History'),
                           onTap: null,
                         ),
-                        const ListTile(
+                        ListTile(
                           leading: Icon(Icons.person),
                           title: Text('Edit account information'),
                           onTap: (){
