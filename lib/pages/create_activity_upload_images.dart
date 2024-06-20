@@ -27,6 +27,8 @@ class MyUploadActivityImagesState extends State<MyUploadActivityImages> {
       String base64Image = convertImageToBase64(_imageData!);
       ActivityMedia activityMedia = ActivityMedia(activityImage: base64Image);
       widget.activity.setActivityMedia(activityMedia);
+      widget.activity.activitySupport!.currentParticipants = 0;
+      
       _createActivity();
     } else {
       // Handle the case when no image is selected
@@ -43,6 +45,8 @@ class MyUploadActivityImagesState extends State<MyUploadActivityImages> {
         print('User not authenticated');
         return;
       }
+        print("Token : $token");
+        print("Activity : ${widget.activity.activitySupport!.currentParticipants}");
 
       final uri = Uri.parse(createactivity);
       final request = http.MultipartRequest('POST', uri);
@@ -75,6 +79,7 @@ class MyUploadActivityImagesState extends State<MyUploadActivityImages> {
         }
       }
 
+      print(request);
       final response = await request.send();
 
       final responseBody = await response.stream.bytesToString();

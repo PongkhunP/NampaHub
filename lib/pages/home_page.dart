@@ -153,8 +153,26 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                     ),
-                  )
+                  ),
+                  IconButton(
+                              onPressed: () {
+                                Navigator.push(context, MaterialPageRoute(
+                                  builder: (context) {
+                                    return const CreateActivityOnePage();
+                                  },
+                                ));
+                              },
+                              icon: const CircleAvatar(
+                                backgroundColor: Colors.blue,
+                                radius: 15,
+                                child: Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
                 ],
+                
               ),
             ),
             const SizedBox(height: 15),
@@ -196,23 +214,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                               ],
                             ),
-                            IconButton(
-                              onPressed: () {
-                                Navigator.push(context, MaterialPageRoute(
-                                  builder: (context) {
-                                    return const CreateActivityOnePage();
-                                  },
-                                ));
-                              },
-                              icon: const CircleAvatar(
-                                backgroundColor: Colors.blue,
-                                radius: 15,
-                                child: Icon(
-                                  Icons.add,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
+
                           ],
                         ),
                         const SizedBox(

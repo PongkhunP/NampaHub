@@ -42,7 +42,9 @@ exports.login = async(req,res,next) => {
         {
             throw new Error('Password is Invalid');
         }
-
+        console.log("User Id : " + user.Id);
+        console.log("Email : " + user.email);
+        
         let tokenData = {_id: user.Id , email: user.email};
 
         const token = await Userservice.generateToken(tokenData, process.env.SECRETKEY, process.env.JWTEXPIRED);
@@ -52,5 +54,18 @@ exports.login = async(req,res,next) => {
     {
         throw err;
     }
+}
+
+exports.show_user = async(req,res,next) => {
+  try
+  {
+      const user_id = req.user._id;
+      const user_data = await Userservice.showUserInfo(user_id)
+      res.json({status :true , success : user_data});
+
+  }catch(err)
+  {
+      throw err;
+  }
 }
 

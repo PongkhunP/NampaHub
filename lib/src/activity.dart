@@ -227,7 +227,7 @@ class ActivitySupport {
       'participants': participants,
       'attend_fee': attendFee,
       'budget': budget,
-      'current_participants': currentParticipants,
+      'current_participants': currentParticipants ?? 0,
     };
   }
 

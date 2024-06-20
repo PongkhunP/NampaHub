@@ -11,6 +11,7 @@ const activity = 'activity';
 //user path
 final registration = '${url}registration';
 final login = '${url}login';
+final getuser = '${url}show-user';
 
 //activity path
 final getactivities = '$url$activity?';

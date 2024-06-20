@@ -1,6 +1,7 @@
 class User {
   String email;
   String password;
+  double rating;
   String firstname;
   String lastname;
   String middlename;
@@ -17,6 +18,7 @@ class User {
   User({
     required this.email,
     required this.password,
+    this.rating = 0,
     this.firstname = '',
     this.lastname = '',
     this.middlename = '',
@@ -123,5 +125,24 @@ class User {
       'start_year': startDate,
       'end_year': endDate,
     };
+  }
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+        email: json['email'],
+        password: '',
+        rating: json['rating'] ?? 0, 
+        firstname: json['first_name'],
+        middlename: json['middle_name'] ?? '',
+        lastname: json['last_name'],
+        age: json['age'],
+        phone: json['phone'],
+        instituteName: json['edu_name'] ?? '',
+        startDate: json['start_year'] ?? '',
+        endDate: json['end_year'] ?? '',
+        companyName: json['company_name'] ?? '',
+        job: json['jobs'] ?? '',
+        country: json['country'],
+        city: json['city']);
   }
 }

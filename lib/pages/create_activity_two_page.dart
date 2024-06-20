@@ -61,6 +61,7 @@ class _CreateActivityOnePageState extends State<CreateActivityTwoPage> {
         widget.activity.setActivitySupport(activitySupport);
         widget.activity.setOrganizer(_organizerController.text);
         widget.activity.setRewards(_rewards);
+        widget.activity.activitySupport!.currentParticipants = 0;
         widget.activity.printDetails();
 
         Navigator.push(context, MaterialPageRoute(
