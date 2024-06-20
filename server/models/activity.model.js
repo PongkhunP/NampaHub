@@ -275,6 +275,15 @@ class ActivityModel {
     return result;
   }
 
+    static async getActivityOfUser(user_id , conn){
+      try {
+        const query = "SELECT Id FROM activity WHERE user_id = ?";
+        const result = await conn.query(query, [user_id]);
+        return result;
+      } catch (error) {
+        throw error;
+      }
+    }
 
 }
 
