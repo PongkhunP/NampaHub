@@ -22,10 +22,14 @@ class _MyRegisterState extends State<MyRegisterEdu> {
   List<String> joblist = ['Student', 'Police', 'Teacher', 'Marine'];
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  TextEditingController _edunameController = TextEditingController();
 
   void _validateAndSend() {
     if (_formKey.currentState?.validate() ?? false) {
-      // Perform your submission logic here
+      widget.user.setStartDate(selectedstartYear ?? '');
+      widget.user.setEndDate(selectedendYear ?? '');
+      _edunameController.text.isNotEmpty ? widget.user.setInstituteName(_edunameController.text) : null;
+
       Navigator.push(context, MaterialPageRoute(
         builder: (context) {
           return MyRegisterWorkInfo(user: widget.user);
@@ -42,64 +46,6 @@ class _MyRegisterState extends State<MyRegisterEdu> {
     '1999': ['2022', '2023', '2024', '2025'],
     '2020': ['2023', '2024', '2025', '2026'],
   };
-
-  // void _navigateToStudentForm() {
-  //   Navigator.push(
-  //     context,
-  //     MaterialPageRoute(builder: (context) => const MyRegisterWorkInfo()),
-  //   );
-  // }
-
-  // void _showTermsDialog() {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: const Text('Terms and Conditions'),
-  //         content: const SingleChildScrollView(
-  //           child: Text(
-  //             'Terms and Conditions\n\n'
-  //             '1. Introduction\n\n'
-  //             'Welcome to NamPaHUB. By using our application, you agree to comply with and be bound by the following terms and conditions. Please review them carefully. If you do not agree to these terms and conditions, you should not use our application.\n\n'
-  //             '2. Information Collection\n\n'
-  //             'We collect the following personal information from you to verify your identity as a human user:\n'
-  //             '- Name\n'
-  //             '- Work Information (e.g., job title, company name)\n'
-  //             '- Location\n\n'
-  //             '3. Use of Information\n\n'
-  //             'The information we collect is used solely for the purpose of verifying that you are a human user. We do not share, sell, or distribute your personal information to third parties without your explicit consent, except as required by law.\n\n'
-  //             '4. Data Protection\n\n'
-  //             'We are committed to ensuring that your information is secure. In order to prevent unauthorized access or disclosure, we have put in place suitable physical, electronic, and managerial procedures to safeguard and secure the information we collect online.\n\n'
-  //             '5. User Responsibilities\n\n'
-  //             'By providing your personal information, you:\n'
-  //             '- Confirm that the information you provide is accurate and complete.\n'
-  //             '- Agree to update your information as necessary to keep it accurate and complete.\n'
-  //             '- Acknowledge that providing false or misleading information may result in the termination of your account.\n\n'
-  //             '6. Account Termination\n\n'
-  //             'We reserve the right to terminate or suspend your account at any time, without prior notice, for any reason, including but not limited to violation of these terms and conditions.\n\n'
-  //             '7. Changes to Terms and Conditions\n\n'
-  //             'We may update these terms and conditions from time to time. Any changes will be posted on this page, and we encourage you to review our terms and conditions regularly to stay informed of any updates.\n\n'
-  //             '8. Contact Us\n\n'
-  //             'If you have any questions or concerns about these terms and conditions, please contact us at support@nampahub.com.\n\n'
-  //             '9. Acceptance of Terms\n\n'
-  //             'By using our application, you signify your acceptance of these terms and conditions. If you do not agree to these terms, please do not use our application. Your continued use of the application following the posting of changes to these terms will be deemed your acceptance of those changes.\n',
-  //           ),
-  //         ),
-  //         actions: <Widget>[
-  //           TextButton(
-  //             child: const Text('Close'),
-  //             onPressed: () {
-  //               setState(() {
-  //                 isAgreed = true;
-  //               });
-  //               Navigator.of(context).pop();
-  //             },
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -159,6 +105,7 @@ class _MyRegisterState extends State<MyRegisterEdu> {
                                     BorderRadius.all(Radius.circular(7)),
                                 borderSide: BorderSide.none),
                           ),
+                          controller: _edunameController,
                           validator: (suName) {
                             if (suName!.isNotEmpty) {
                               if (RegExp('[a-zA-Z]').hasMatch(suName)) {
@@ -167,6 +114,7 @@ class _MyRegisterState extends State<MyRegisterEdu> {
                                 return 'Enter a Valid School/University name';
                               }
                             }
+                            return null;
                           })),
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -248,67 +196,6 @@ class _MyRegisterState extends State<MyRegisterEdu> {
                       }).toList(),
                     ),
                   ),
-
-                  // Center(
-                  //   child: Column(
-                  //     children: [
-                  //       Padding(
-                  //         padding: const EdgeInsets.only(top: 210),
-                  //         child: Row(
-                  //           mainAxisAlignment: MainAxisAlignment.center,
-                  //           children: [
-                  //             Checkbox(
-                  //               shape: const CircleBorder(),
-                  //               value: isAgreed,
-                  //               onChanged: (newValue) {
-                  //                 setState(() {
-                  //                   isAgreed = newValue!;
-                  //                 });
-                  //               },
-                  //             ),
-                  //             const SizedBox(width: 10),
-                  //             const Text(
-                  //               'I agree to the ',
-                  //               style: TextStyle(fontSize: 16),
-                  //             ),
-                  //             GestureDetector(
-                  //               onTap: _showTermsDialog,
-                  //               child: const Text(
-                  //                 'Terms and Conditions',
-                  //                 style: TextStyle(
-                  //                   fontSize: 16,
-                  //                   color: Colors.red,
-                  //                 ),
-                  //               ),
-                  //             ),
-                  //           ],
-                  //         ),
-                  //       ),
-                  //       Padding(
-                  //         padding: const EdgeInsets.only(top: 10),
-                  //         child: Row(
-                  //           mainAxisAlignment: MainAxisAlignment.center,
-                  //           children: [
-                  //             const Text(
-                  //               'you are employee? ',
-                  //               style: TextStyle(fontSize: 16),
-                  //             ),
-                  //             GestureDetector(
-                  //               onTap: () {},
-                  //               child: const Text(
-                  //                 'Employee form',
-                  //                 style: TextStyle(
-                  //                   fontSize: 16,
-                  //                   color: Colors.green,
-                  //                 ),
-                  //               ),
-                  //             ),
-                  //           ],
-                  //         ),
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
 
                   const SizedBox(height: 10),
                   SizedBox(

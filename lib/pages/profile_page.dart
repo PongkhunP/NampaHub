@@ -62,6 +62,35 @@ class _MyProfilePageState extends State<MyProfilePage> {
     }
   }
 
+  Future<void> deleteUser() async {
+    try {
+      final String? token = await TokenManager.getToken();
+      if (token == null) {
+        throw Exception('Token not found');
+      }
+      if (mounted) {
+        await logout(context);
+      }
+      final response = await http.delete(
+        Uri.parse(deleteuser),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      setState(() {});
+
+      if (response.statusCode == 200) {
+        print("Delete user successfully");
+      } else {
+        throw Exception('Failed to delete user');
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,9 +107,9 @@ class _MyProfilePageState extends State<MyProfilePage> {
             if (userData.hasError) {
               return Text('Error ${userData.error}');
             } else if (userData.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             } else if (!userData.hasData) {
-              return Text('Unknown user');
+              return const Text('Unknown user');
             } else {
               User user = userData.data!;
 
@@ -100,42 +129,44 @@ class _MyProfilePageState extends State<MyProfilePage> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(10),
                     child: Text(
                       '${user.firstname} ${user.lastname}',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  user.companyName.isNotEmpty ? 
+                  user.companyName.isNotEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Text(
+                            ("Company name : ${user.companyName}"),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
+                      : const Text(""),
+                  user.instituteName.isNotEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.all(1),
+                          child: Text(
+                            ("Education name : ${user.instituteName}"),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
+                      : const Text(""),
                   Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Text(
-                      user.companyName,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ) : const Text(""),
-                  user.instituteName.isNotEmpty?
-                  Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Text(
-                        user.instituteName,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ) : const Text(""),
-
-                  Padding(
-                    padding: const EdgeInsets.only(right: 18, top: 10, bottom: 0),
+                    padding:
+                        const EdgeInsets.only(right: 18, top: 10, bottom: 0),
                     child: Align(
                       alignment: Alignment.center,
                       child: Row(
@@ -235,12 +266,12 @@ class _MyProfilePageState extends State<MyProfilePage> {
                         vertical: 20, horizontal: 10),
                     child: Column(
                       children: [
-                        ListTile(
+                        const ListTile(
                           leading: Icon(Icons.history),
                           title: Text('History'),
                           onTap: null,
                         ),
-                        ListTile(
+                        const ListTile(
                           leading: Icon(Icons.person),
                           title: Text('Edit account information'),
                           onTap: null,
@@ -306,7 +337,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                             'Delete account',
                             style: TextStyle(color: Colors.red),
                           ),
-                          onTap: null,
+                          onTap: deleteUser,
                         ),
                       ],
                     ),
