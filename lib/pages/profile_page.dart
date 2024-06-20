@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:nampa_hub/mid/auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:nampa_hub/pages/edit_profile_page.dart';
 import 'package:nampa_hub/src/config.dart';
 import 'package:nampa_hub/auth/login.dart';
 import 'package:nampa_hub/mid/token_manager.dart';
@@ -274,7 +275,11 @@ class _MyProfilePageState extends State<MyProfilePage> {
                         const ListTile(
                           leading: Icon(Icons.person),
                           title: Text('Edit account information'),
-                          onTap: null,
+                          onTap: (){
+                            Navigator.push(context,MaterialPageRoute(builder: (context) {
+                              return MyEditProfilePage(user: user,);
+                            },));
+                          },
                         ),
                         ListTile(
                           leading: const Icon(Icons.logout),

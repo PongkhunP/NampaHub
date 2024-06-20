@@ -140,6 +140,27 @@ class UserService {
       throw error;
     }
   }
+  static async EditUser(userDetails, user_Id){
+    let conn;
+    try {
+        // {email: '', passowd: ""}
+        conn = await pool.getConnection();
+        conn.beginTransaction();
+
+        await UserModel.updateUserAccount(userDetails.email,userDetails.password,user_Id,conn)
+        await UserModel.updateUserEdu(userDetails.edu_name,userDetails.start_year,userDetails.end_year,user_Id,conn)
+        await UserModel.updateUserLocation(userDetails.country,userDetails.city,user_Id,conn)
+        await UserModel.updateUserPersonal(userDetails.firstname,userDetails.lastname,userDetails.middlename,userDetails.age,userDetails.phone,user_Id,conn)
+        await UserModel.updateUserWorkData(userDetails.company_name,userDetails.job,user_Id,conn)
+        
+        await conn.commit();
+        return true;
+    } catch (error) {
+        throw error;
+    }
+
 }
+}
+
 
 module.exports = UserService;
