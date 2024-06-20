@@ -18,3 +18,4 @@ final deleteuser = '${url}delete-user';
 final getactivities = '$url$activity?';
 final getactivity = '$url$activity/activity-details?';
 final createactivity = '$url$activity/create-activity';
+final gethistory ='$url$activity/history';

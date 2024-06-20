@@ -40,3 +40,16 @@ exports.getActivity = async (req, res, next) => {
         next(error);
     }
 };
+
+exports.getHistory = async (req, res, next) =>{
+    try {
+        const status = req.query.status;
+        const activities = await ActivityService.getHistory(status);
+        console.log("Status from req: "+status)
+        console.log(activities);
+
+        res.json({status: true, success: activities});
+    } catch (error) {
+        throw error
+    }
+}

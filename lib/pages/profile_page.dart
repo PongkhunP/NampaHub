@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:nampa_hub/mid/auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:nampa_hub/pages/edit_profile_page.dart';
+import 'package:nampa_hub/pages/history_page.dart';
 import 'package:nampa_hub/src/config.dart';
 import 'package:nampa_hub/auth/login.dart';
 import 'package:nampa_hub/mid/token_manager.dart';
@@ -267,10 +268,12 @@ class _MyProfilePageState extends State<MyProfilePage> {
                         vertical: 20, horizontal: 10),
                     child: Column(
                       children: [
-                        const ListTile(
+                        ListTile(
                           leading: Icon(Icons.history),
                           title: Text('History'),
-                          onTap: null,
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context){return MyHistoryPage();}));
+                          },
                         ),
                         ListTile(
                           leading: Icon(Icons.person),

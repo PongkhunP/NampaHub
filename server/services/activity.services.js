@@ -245,6 +245,66 @@ class ActivityService {
       }
     }
   }
+
+  static async getHistory(status) {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+      await conn.beginTransaction();
+
+      
+
+      const activities = await ActivityModel.getActivityInfo(conn, {
+        field: "status",
+        operator: "=",
+        value: status,
+      });
+      console.log("status:" + status)
+      console.log("acitivity id: "+ activities)
+
+      for (const activity of activities) {
+        const location = await ActivityModel.getActivityLocation(
+          conn,
+          { field: "activity_id", operator: "=", value: activity.Id },
+          ["event_location"]
+        );
+        if (location.length > 0) {
+          activity.event_location = location[0];
+        }
+
+        const media = await ActivityModel.getActivityMedia(
+          conn,
+          { field: "activity_id", operator: "=", value: activity.Id },
+          ["activity_image"]
+        );
+
+        if (media.length > 0) {
+          activity.activity_image = media[0].activity_image;
+        }
+        const support = await ActivityModel.getActivitySupport(
+        conn,
+        {field: 'activity_id', operator : "=", value:activity.Id},
+        ["participants"]
+        );
+        if(support.length > 0){
+          activity.participants = support[0].participants;
+        }
+      }
+
+      await conn.commit(); // Commit transaction
+      return activities;
+    } catch (error) {
+      if (conn) {
+        await conn.rollback(); // Rollback transaction on error
+      }
+      console.error("Error fetching activities:", error);
+      throw error;
+    } finally {
+      if (conn) {
+        await conn.release();
+      }
+    }
+  }
 }
 
 module.exports = ActivityService;

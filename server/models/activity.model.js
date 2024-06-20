@@ -128,7 +128,7 @@ class ActivityModel {
   //get basic activity information
   static async getActivityInfo(conn, condition = null, data_columns = ["*"]) {
 
-    const allowedConditions = ["activity_type", "organizer", "Id"];
+    const allowedConditions = ["activity_type", "organizer", "Id","status"];
     const table = "activity";
 
     const queryBuilder = getFunctions(conn)

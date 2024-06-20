@@ -17,5 +17,6 @@ router.post(
 
 router.get("/", authenticateToken, ActivityController.getActivities);
 router.get("/activity-details", authenticateToken, ActivityController.getActivity);
+router.get("/history", authenticateToken, ActivityController.getHistory);
 
 module.exports = router;

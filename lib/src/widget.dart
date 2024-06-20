@@ -1,7 +1,10 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nampa_hub/src/activity.dart';
+import 'package:nampa_hub/src/config.dart';
 
 class Logo extends StatelessWidget {
   const Logo({super.key});
@@ -92,17 +95,11 @@ class ActivityCard extends StatelessWidget {
 }
 
 class ActivityHistoryCard extends StatelessWidget {
-  final String activityName;
-  final String location;
-  final String participation;
-  final String status;
+  final ActivityListItem activity;
 
   const ActivityHistoryCard({
     super.key,
-    required this.activityName,
-    required this.location,
-    required this.participation,
-    required this.status,
+    required this.activity,
   });
 
   @override
@@ -132,8 +129,8 @@ class ActivityHistoryCard extends StatelessWidget {
               width: 130,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                image: const DecorationImage(
-                  image: AssetImage('images/Beach.jpg'),
+                image: DecorationImage(
+                  image: MemoryImage(base64Decode(activity.activityMedia.base64Image)),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -147,13 +144,13 @@ class ActivityHistoryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    activityName,
+                    activity.title,
                     style: const TextStyle(
                         fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    location,
+                    activity.eventLocation,
                     style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                   const SizedBox(height: 5),
@@ -168,7 +165,7 @@ class ActivityHistoryCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    participation,
+                   activity.participants.toString(),
                     style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 ],

@@ -1,5 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:nampa_hub/mid/token_manager.dart';
+import 'package:nampa_hub/src/activity.dart';
 import 'package:nampa_hub/src/widget.dart';
+import 'package:http/http.dart' as http;
+import 'package:nampa_hub/src/config.dart';
 
 class MyHistoryPage extends StatefulWidget {
   const MyHistoryPage({super.key});
@@ -68,6 +74,42 @@ class MyHistoryPageState extends State<MyHistoryPage> {
     });
   }
 
+  Future<List<ActivityListItem>> getHistory() async {
+    try {
+      final token = await TokenManager.getToken();
+
+      if (token == null) {
+        throw Exception("token Invalid please try again!");
+      }
+
+      final url = '$gethistory?status=$_activeButtonLabel';
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-type': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> body = jsonDecode(response.body);
+        if (body['status'] == true) {
+          List<dynamic> activitiesJson = body['success'];
+          return activitiesJson.map((dynamic activity) => ActivityListItem.fromJson(activity)).toList();
+        }
+        else {
+        throw Exception('Failed to load activities: ${body['message']}');
+        }
+      } 
+      else {
+      throw Exception('Failed to load activities');
+    }
+    } catch (e) {
+      throw e;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     List<int> filteredIndexes = getFilteredIndexes();
@@ -90,8 +132,8 @@ class MyHistoryPageState extends State<MyHistoryPage> {
                 children: [
                   CustomButton(
                     label: 'On going',
-                    isActive: _activeButtonLabel == 'On going',
-                    onPressed: () => _onButtonPressed('On going'),
+                    isActive: _activeButtonLabel == 'On-going',
+                    onPressed: () => _onButtonPressed('On-going'),
                   ),
                   const SizedBox(width: 10),
                   CustomButton(
@@ -115,21 +157,39 @@ class MyHistoryPageState extends State<MyHistoryPage> {
               ),
             ),
             const SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                itemCount: filteredIndexes.length,
-                itemBuilder: (BuildContext context, int index) {
-                  int activityIndex = filteredIndexes[index];
-                  return Padding(
-                    padding:
-                        const EdgeInsets.only(bottom: 16, left: 10, right: 10),
-                    child: ActivityHistoryCard(
-                      activityName: activityNames[activityIndex],
-                      location: locations[activityIndex],
-                      participation: participations[activityIndex],
-                      status: statuses[activityIndex],
-                    ),
-                  );
+            SingleChildScrollView(
+              child: FutureBuilder(
+                future: getHistory(),
+                builder: (context, activitys) {
+                  if(activitys.hasError){
+                    return Text("Error : ${activitys.error}");
+                  }
+                  else if(activitys.connectionState == ConnectionState.waiting){
+                    return const Center(
+                      child : CircularProgressIndicator(),
+                    );
+                  }
+                  else if(!activitys.hasData){
+                    return const Text("No Activity found.");
+                  }
+                  else{
+                    List<ActivityListItem> activityList = activitys.data!;
+                    return  ListView.builder(
+                      shrinkWrap: true,
+                  itemCount: activityList.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    
+                    return Padding(
+                      padding:
+                          const EdgeInsets.only(bottom: 16, left: 10, right: 10),
+                      child: ActivityHistoryCard(
+                       activity: activityList[index],
+                      ),
+                    );
+                  },
+                );
+                  }
+                  
                 },
               ),
             ),
