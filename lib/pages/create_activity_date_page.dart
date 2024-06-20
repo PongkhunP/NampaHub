@@ -204,6 +204,8 @@ class _CreateActivityDateState extends State<CreateActivityDate> {
                         validator: (value) {
                           if (_endRegisterDate == null) {
                             return 'Select end register date';
+                          }else if (_endRegisterDate ==  _startRegisterDate){
+                            return 'Cannnot select same date';
                           }
                           return null;
                         },
@@ -250,6 +252,8 @@ class _CreateActivityDateState extends State<CreateActivityDate> {
                         validator: (value) {
                           if (_eventDate == null) {
                             return 'Select event date';
+                          }else if (_endRegisterDate ==  _startRegisterDate){
+                            return 'Cannnot select same date';
                           }
                           return null;
                         },
