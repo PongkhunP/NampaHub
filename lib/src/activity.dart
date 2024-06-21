@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -11,10 +12,13 @@ class Activity {
   String? contactEmail;
   String? organizer;
   String? activityType;
+  String? status;
+  double? rating;
   ActivityDate? activityDate;
   ActivityMedia? activityMedia;
   ActivityLocation? activityLocation;
   ActivitySupport? activitySupport;
+  ActivityExpense? activityExpense;
   List<ActivityReward>? rewards;
   List<ActivityExpense>? expenses;
   int? userId;
@@ -27,6 +31,8 @@ class Activity {
       this.contactEmail,
       this.organizer,
       this.activityType,
+      this.status,
+      this.rating = 0,
       this.activityDate,
       this.activityMedia,
       this.activityLocation,
@@ -40,6 +46,8 @@ class Activity {
   void setGoals(List<String> goals) => this.goals = goals;
   void setContactEmail(String contactEmail) => this.contactEmail = contactEmail;
   void setOrganizer(String organizer) => this.organizer = organizer;
+  void setStatus(String status) => this.status = status;
+  void setRating(double rating) => this.rating = rating;
   void setActivityDate(ActivityDate activityDate) =>
       this.activityDate = activityDate;
   void setActivityMedia(ActivityMedia activityMedia) =>
@@ -59,6 +67,8 @@ class Activity {
       'contact_email': contactEmail,
       'organizer': organizer,
       'activity_type': activityType,
+      'status': status,
+      'rating': rating,
       'activity_date': activityDate?.toJson(),
       'activity_media': activityMedia?.toJson(), // Serialize ActivityMedia
       'activity_location': activityLocation?.toJson(),
@@ -113,6 +123,7 @@ class Activity {
     print('Description: $description');
     print('Goals: ${goals?.join(", ")}');
     print('Contact Email: $contactEmail');
+    print("Organizer : $organizer");
     print('Activity Type: $activityType');
     print('Activity Date: ${activityDate?.toJson()}');
     print('Activity Media: ${activityMedia?.toJson()}');
@@ -122,6 +133,7 @@ class Activity {
     rewards?.forEach((reward) => reward.printDetails());
     print('Expenses:');
     expenses?.forEach((expense) => expense.printDetails());
+    print("User Id : $userId");
   }
 }
 
@@ -283,7 +295,7 @@ class ActivityReward {
 
 class ActivityExpense {
   String? name;
-  String? expense;
+  double? expense;
 
   ActivityExpense({
     this.name,
@@ -291,7 +303,7 @@ class ActivityExpense {
   });
 
   void setName(String name) => this.name = name;
-  void setExpense(String expense) => this.expense = expense;
+  void setExpense(double expense) => this.expense = expense;
 
   Map<String, dynamic> toJson() {
     return {
@@ -303,7 +315,7 @@ class ActivityExpense {
   factory ActivityExpense.fromJson(Map<String, dynamic> json) {
     return ActivityExpense(
       name: json['name'],
-      expense: json['expense'],
+      expense: (json['expense']).toDouble(),
     );
   }
 
@@ -322,15 +334,13 @@ class ActivityListItem {
   final int userId;
   int participants;
 
-
   ActivityListItem({
     required this.id,
     required this.title,
     required this.eventLocation,
     required this.activityMedia,
     required this.userId,
-    this.participants = 0
-    
+    this.participants = 0,
   });
 
   factory ActivityListItem.fromJson(Map<String, dynamic> json) {

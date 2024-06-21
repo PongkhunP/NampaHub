@@ -17,6 +17,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String currentFilter = 'Marine';
+  String searchQuery = '';
   late Future<List<ActivityListItem>> futureActivities;
 
   @override
@@ -29,6 +30,13 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       currentFilter = option;
       futureActivities = ActivityService.getActivities(currentFilter);
+    });
+  }
+
+  void setSearchQuery(String query) {
+    setState(() {
+      searchQuery = query;
+      futureActivities = ActivityService.searchActivities(query);
     });
   }
 
@@ -62,16 +70,42 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
-              decoration: InputDecoration(
-                hintText: "Search...",
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20.0),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: "Search...",
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 5.0, horizontal: 15.0),
+                    ),
+                    onChanged: (query) {
+                      setSearchQuery(query);
+                    },
+                  ),
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
-              ),
+                IconButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (context) {
+                        return const CreateActivityOnePage();
+                      },
+                    ));
+                  },
+                  icon: const CircleAvatar(
+                    backgroundColor: Colors.blue,
+                    radius: 15,
+                    child: Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 15),
             SingleChildScrollView(
@@ -141,7 +175,8 @@ class _MyHomePageState extends State<MyHomePage> {
                             MaterialStateProperty.all<RoundedRectangleBorder>(
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
-                            side: BorderSide(color: Colors.black, width: 2),
+                            side:
+                                const BorderSide(color: Colors.black, width: 2),
                           ),
                         ),
                       ),
@@ -154,25 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                   ),
-                  IconButton(
-                              onPressed: () {
-                                Navigator.push(context, MaterialPageRoute(
-                                  builder: (context) {
-                                    return const CreateActivityOnePage();
-                                  },
-                                ));
-                              },
-                              icon: const CircleAvatar(
-                                backgroundColor: Colors.blue,
-                                radius: 15,
-                                child: Icon(
-                                  Icons.add,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
                 ],
-                
               ),
             ),
             const SizedBox(height: 15),
@@ -204,7 +221,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                 ),
                                 Text(
-                                  '${snapshot.data?.length} ${snapshot.data?.length == 1 ? 'Activity' : 'Activities'}',
+                                  '${snapshot.data?.length} ${snapshot.data!.length < 2 ? 'Activity' : 'Activities'}',
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -214,7 +231,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                               ],
                             ),
-
                           ],
                         ),
                         const SizedBox(

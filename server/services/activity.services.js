@@ -1,6 +1,5 @@
 const ActivityModel = require("../models/activity.model");
 const pool = require("../configuration/db");
-const { json } = require("body-parser");
 
 class ActivityService {
   static async createActivity(
@@ -27,6 +26,8 @@ class ActivityService {
         activityData.activity_type,
         activityData.contact_email || user_email,
         activityData.organizer || user_email,
+        activityData.status || "On-going",
+        activityData.rating || 0,
         user_id,
         conn
       );
@@ -57,9 +58,20 @@ class ActivityService {
         activityData.activity_support.participants,
         activityData.activity_support.attend_fee || 0,
         activityData.activity_support.budget || 0,
+        activityData.activity_support.current_participants || 0,
         activity_id,
         conn
       );
+
+      console.log("Creating activity expenses...");
+      for (const expense of activityData.expenses) {
+        await ActivityModel.createActivityExpense(
+          expense.name,
+          expense.expense,
+          activity_id,
+          conn
+        );
+      }
 
       if (activityImage) {
         console.log("Creating activity media...");
@@ -75,7 +87,6 @@ class ActivityService {
           (reward) => reward.name === rewardImage.originalname
         );
         if (rewardData) {
-          console.log(`Creating reward: ${rewardData.name}`);
           await ActivityModel.createActivityReward(
             rewardData.name,
             rewardImage.buffer,
@@ -106,6 +117,7 @@ class ActivityService {
       if (activity_type != "Forest" && activity_type != "Marine") {
         activity_type = "Other";
       }
+
       const activities = await ActivityModel.getActivityInfo(conn, {
         field: "activity_type",
         operator: "=",
@@ -130,6 +142,64 @@ class ActivityService {
 
         if (media.length > 0) {
           activity.activity_image = media[0].activity_image;
+        }
+      }
+
+      await conn.commit(); // Commit transaction
+      return activities;
+    } catch (error) {
+      if (conn) {
+        await conn.rollback(); // Rollback transaction on error
+      }
+      console.error("Error fetching activities:", error);
+      throw error;
+    } finally {
+      if (conn) {
+        await conn.release();
+      }
+    }
+  }
+
+  static async getHistoryActivity(status) {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+      await conn.beginTransaction();
+
+      const activities = await ActivityModel.getActivityInfo(conn, {
+        field: "status",
+        operator: "=",
+        value: status,
+      });
+
+      for (const activity of activities) {
+        const location = await ActivityModel.getActivityLocation(
+          conn,
+          { field: "activity_id", operator: "=", value: activity.Id },
+          ["event_location"]
+        );
+        if (location.length > 0) {
+          activity.event_location = location[0];
+        }
+
+        const media = await ActivityModel.getActivityMedia(
+          conn,
+          { field: "activity_id", operator: "=", value: activity.Id },
+          ["activity_image"]
+        );
+
+        if (media.length > 0) {
+          activity.activity_image = media[0].activity_image;
+        }
+
+        const support = await ActivityModel.getActivitySupport(
+          conn,
+          { field: "activity_id", operator: "=", value: activity.Id },
+          ["participants"]
+        );
+
+        if (support.length > 0) {
+          activity.participants = support[0].participants;
         }
       }
 
@@ -189,15 +259,12 @@ class ActivityService {
         { field: "activity_id", operator: "=", value: activity_id },
         ["activity_image"]
       );
-      console.log(activity_media);
 
       const activity_reward = await ActivityModel.getActivityReward(
         conn,
         { field: "activity_id", operator: "=", value: activity_id },
         ["name", "reward_image", "description"]
       );
-
-      // console.log('Rewards : ' + activity_reward[0].reward_image);
 
       const activity_expense = await ActivityModel.getActivityExpense(
         conn,
@@ -217,7 +284,6 @@ class ActivityService {
         expenses: activity_expense,
       };
 
-
       return activity;
     } catch (error) {
       if (conn) {
@@ -230,6 +296,11 @@ class ActivityService {
         await conn.release();
       }
     }
+  }
+
+  static async getSearchActivity(query)
+  {
+    
   }
 
   static logObject(obj, indent = 0) {

@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:nampa_hub/src/user.dart';
 import 'package:nampa_hub/src/widget.dart';
@@ -22,13 +20,15 @@ class _MyRegisterState extends State<MyRegisterEdu> {
   List<String> joblist = ['Student', 'Police', 'Teacher', 'Marine'];
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController _edunameController = TextEditingController();
+  final TextEditingController _edunameController = TextEditingController();
 
   void _validateAndSend() {
     if (_formKey.currentState?.validate() ?? false) {
       widget.user.setStartDate(selectedstartYear ?? '');
       widget.user.setEndDate(selectedendYear ?? '');
-      _edunameController.text.isNotEmpty ? widget.user.setInstituteName(_edunameController.text) : null;
+      _edunameController.text.isNotEmpty
+          ? widget.user.setInstituteName(_edunameController.text)
+          : null;
 
       Navigator.push(context, MaterialPageRoute(
         builder: (context) {
@@ -85,7 +85,7 @@ class _MyRegisterState extends State<MyRegisterEdu> {
                           horizontal: 20, vertical: 10),
                       child: TextFormField(
                           decoration: const InputDecoration(
-                            hintText: 'School/University name',
+                            hintText: 'School/University name (Optional)',
                             filled: true,
                             fillColor: Color.fromARGB(255, 230, 229, 229),
                             enabledBorder: OutlineInputBorder(
@@ -214,26 +214,6 @@ class _MyRegisterState extends State<MyRegisterEdu> {
                       child: const Text(
                         'Next',
                         style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: 350,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _validateAndSend,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(10), // Circle shape
-                        ),
-                      ),
-                      child: const Text(
-                        'Skip',
-                        style: TextStyle(fontSize: 18, color: Colors.black),
                       ),
                     ),
                   ),

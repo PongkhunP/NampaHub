@@ -1,11 +1,10 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:nampa_hub/mid/token_manager.dart';
 import 'package:nampa_hub/src/activity.dart';
+import 'package:nampa_hub/src/config.dart';
 import 'package:nampa_hub/src/widget.dart';
 import 'package:http/http.dart' as http;
-import 'package:nampa_hub/src/config.dart';
 
 class MyHistoryPage extends StatefulWidget {
   const MyHistoryPage({super.key});
@@ -16,6 +15,7 @@ class MyHistoryPage extends StatefulWidget {
 
 class MyHistoryPageState extends State<MyHistoryPage> {
   String? _activeButtonLabel;
+  Future<List<ActivityListItem>>? _futureHistory;
 
   final List<String> activityNames = [
     'Beach Cleanup',
@@ -45,7 +45,7 @@ class MyHistoryPageState extends State<MyHistoryPage> {
   ];
 
   final List<String> statuses = [
-    'On going',
+    'On-going',
     'Success',
     'Success',
     'Canceled',
@@ -55,8 +55,8 @@ class MyHistoryPageState extends State<MyHistoryPage> {
   @override
   void initState() {
     super.initState();
-    _activeButtonLabel =
-        'On going'; // Automatically select 'On going' on page load
+    _activeButtonLabel = 'On-going';
+    _futureHistory = getHistory();
   }
 
   List<int> getFilteredIndexes() {
@@ -71,6 +71,7 @@ class MyHistoryPageState extends State<MyHistoryPage> {
   void _onButtonPressed(String label) {
     setState(() {
       _activeButtonLabel = label;
+      _futureHistory = getHistory();
     });
   }
 
@@ -131,7 +132,7 @@ class MyHistoryPageState extends State<MyHistoryPage> {
               child: Row(
                 children: [
                   CustomButton(
-                    label: 'On going',
+                    label: 'On-going',
                     isActive: _activeButtonLabel == 'On-going',
                     onPressed: () => _onButtonPressed('On-going'),
                   ),

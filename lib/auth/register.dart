@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:nampa_hub/pages/register_form_personal_page.dart';
 import 'package:nampa_hub/src/user.dart';
@@ -25,8 +24,8 @@ class _RegisterPageState extends State<RegisterPage> {
         builder: (context) {
           return MyRegisterPersonalInfo(
             user: User(
-                    email: _emailController.text,
-                    password: _passwordController.text),
+                email: _emailController.text,
+                password: _passwordController.text),
           );
         },
       ));
@@ -49,6 +48,7 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Logo(),
         ),
         backgroundColor: const Color(0xFF1B8900),
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),

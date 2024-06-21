@@ -90,6 +90,10 @@ class User {
     this.endDate = endDate;
   }
 
+  void setRating(double rating) {
+    this.rating = rating;
+  }
+
   // Print details
   void printDetails() {
     print('Email: $email');
@@ -127,18 +131,11 @@ class User {
     };
   }
 
-  void setRating(double rating){
-    this.rating = rating;
-  }
-
-
-
-
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
         email: json['email'],
         password: '',
-        rating: json['rating'] ?? 0, 
+        rating: (json['rating']).toDouble() ?? 0,
         firstname: json['first_name'],
         middlename: json['middle_name'] ?? '',
         lastname: json['last_name'],

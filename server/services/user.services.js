@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const UserModel = require("../models/user.model");
+const ActivityModel = require("../models/activity.model");
 const pool = require("../configuration/db");
 const ActivityModel = require("../models/activity.model")
 const { fields } = require("../configuration/upload");
@@ -21,6 +22,7 @@ class UserService {
       const user_account = await UserModel.createUserAccount(
         userDetails.email,
         hashedPassword,
+        userDetails.rating,
         conn
       );
       const userId = user_account.insertId;
@@ -68,9 +70,14 @@ class UserService {
       }
 
       await conn.commit();
-      return { insertId: userId, ...user_account };
+      return { insertId: userId, ...user_account};
     } catch (err) {
-      throw err;
+      next(error);
+    } finally {
+      if(conn)
+      {
+        await conn.release();
+      }
     }
   }
 
@@ -112,7 +119,12 @@ class UserService {
       // const userInfo = {user_account , user_personal , user_edu , user_work, user_location}
       return userInfo;
     } catch (error) {
-      throw error;
+      next(error);
+    } finally {
+      if(conn)
+        {
+          await conn.release();
+        }
     }
   }
 
@@ -143,24 +155,85 @@ class UserService {
   static async EditUser(userDetails, user_Id){
     let conn;
     try {
-        // {email: '', passowd: ""}
-        conn = await pool.getConnection();
-        conn.beginTransaction();
 
-        await UserModel.updateUserAccount(userDetails.email,userDetails.password,user_Id,conn)
-        await UserModel.updateUserEdu(userDetails.edu_name,userDetails.start_year,userDetails.end_year,user_Id,conn)
-        await UserModel.updateUserLocation(userDetails.country,userDetails.city,user_Id,conn)
-        await UserModel.updateUserPersonal(userDetails.firstname,userDetails.lastname,userDetails.middlename,userDetails.age,userDetails.phone,user_Id,conn)
-        await UserModel.updateUserWorkData(userDetails.company_name,userDetails.job,user_Id,conn)
-        
-        await conn.commit();
-        return true;
+      conn = await pool.getConnection();
+      conn.beginTransaction();
+
+      await UserModel.updateUserAccount(
+        userDetails.email,
+        userDetails.password,
+        user_Id,
+        conn
+      );
+      await UserModel.updateUserEdu(
+        userDetails.edu_name,
+        userDetails.start_year,
+        userDetails.end_year,
+        user_Id,
+        conn
+      );
+      await UserModel.updateUserLocation(
+        userDetails.country,
+        userDetails.city,
+        user_Id,
+        conn
+      );
+      await UserModel.updateUserPersonal(
+        userDetails.firstname,
+        userDetails.lastname,
+        userDetails.middlename,
+        userDetails.age,
+        userDetails.phone,
+        user_Id,
+        conn
+      );
+      await UserModel.updateUserWorkData(
+        userDetails.company_name,
+        userDetails.job,
+        user_Id,
+        conn
+      );
+
+      await conn.commit();
+      return true;
     } catch (error) {
-        throw error;
+      next(error);
+    } finally {
+      if(conn)
+        {
+          await conn.release();
+        }
     }
+  }
 
-}
-}
+  static async deleteUserAccount(user_id)
+  {
+    let conn; 
+    try {
+      conn = await pool.getConnection();
+      await conn.beginTransaction;
 
+      const activity_ids = await ActivityModel.getActivityOfUser(user_id);
+      console.log("Activity ids : " + activity_ids);
+      
+      for(const activity_id in activity_ids)
+      {
+        console.log("Activity ids : " + activity_id);
+        await UserModel.deleteActivityData(activity_id, conn);
+      }
+      const delete_user = await UserModel.deleteAllUserRelatedData(user_id, conn);
+
+      await conn.commit();
+      return true;
+    } catch (error) {
+      next(error);
+    } finally {
+      if(conn)
+        {
+          await conn.release();
+        }
+    }
+  }
+}
 
 module.exports = UserService;

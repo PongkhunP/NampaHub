@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:nampa_hub/pages/edit_profile_page.dart';
 import 'package:nampa_hub/pages/history_page.dart';
 import 'package:nampa_hub/src/config.dart';
-import 'package:nampa_hub/auth/login.dart';
 import 'package:nampa_hub/mid/token_manager.dart';
 import 'package:nampa_hub/src/user.dart';
 import 'package:nampa_hub/src/widget.dart';
@@ -47,14 +46,10 @@ class _MyProfilePageState extends State<MyProfilePage> {
         'Authorization': 'Bearer $token',
       },
     );
-
-    print("Response : ${response.body}");
-    print("URI : $getuser");
     if (response.statusCode == 200) {
       Map<String, dynamic> body = jsonDecode(response.body);
       if (body['status'] == true) {
         var user = body['success'];
-        print("User data : $user");
         return User.fromJson(user);
       } else {
         throw Exception('Failed to load user: ${body['message']}');
@@ -133,8 +128,8 @@ class _MyProfilePageState extends State<MyProfilePage> {
                   Padding(
                     padding: const EdgeInsets.all(10),
                     child: Text(
-                      '${user.firstname} ${user.lastname}',
-                      style: const TextStyle(
+                      '${user.firstname} ${user.middlename} ${user.lastname}',
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -278,10 +273,14 @@ class _MyProfilePageState extends State<MyProfilePage> {
                         ListTile(
                           leading: Icon(Icons.person),
                           title: Text('Edit account information'),
-                          onTap: (){
-                            Navigator.push(context,MaterialPageRoute(builder: (context) {
-                              return MyEditProfilePage(user: user,);
-                            },));
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(
+                              builder: (context) {
+                                return MyEditProfilePage(
+                                  user: user,
+                                );
+                              },
+                            ));
                           },
                         ),
                         ListTile(
@@ -340,8 +339,8 @@ class _MyProfilePageState extends State<MyProfilePage> {
                           },
                         ),
                         ListTile(
-                          leading: Icon(Icons.delete, color: Colors.red),
-                          title: Text(
+                          leading: const Icon(Icons.delete, color: Colors.red),
+                          title: const Text(
                             'Delete account',
                             style: TextStyle(color: Colors.red),
                           ),

@@ -65,12 +65,10 @@ class ActivityCard extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 image: DecorationImage(
-                  image: MemoryImage(imageBytes),
-                    fit: BoxFit.contain
-                  ),
-                ),
+                    image: MemoryImage(imageBytes), fit: BoxFit.contain),
               ),
             ),
+          ),
           const SizedBox(height: 5),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -123,39 +121,39 @@ class ActivityHistoryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(10),
             child: Container(
               height: 130,
               width: 130,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 image: DecorationImage(
-                  image: MemoryImage(base64Decode(activity.activityMedia.base64Image)),
+                  image: MemoryImage(
+                      base64Decode(activity.activityMedia.base64Image)),
                   fit: BoxFit.cover,
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 10),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10.0),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  Text( 
                     activity.title,
                     style: const TextStyle(
                         fontSize: 15, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 5),
                   Text(
                     activity.eventLocation,
                     style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                   const SizedBox(height: 5),
                   const Padding(
-                    padding: EdgeInsets.only(top: 30),
+                    padding: EdgeInsets.only(top: 20),
                     child: Text(
                       'Participation',
                       style: TextStyle(
@@ -165,7 +163,7 @@ class ActivityHistoryCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                   activity.participants.toString(),
+                    activity.participants.toString(),
                     style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 ],
@@ -174,6 +172,67 @@ class ActivityHistoryCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class RewardItem extends StatefulWidget {
+  final ActivityReward reward;
+
+  RewardItem({required this.reward});
+
+  @override
+  _RewardItemState createState() => _RewardItemState();
+}
+
+class _RewardItemState extends State<RewardItem> {
+  bool isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Image.memory(
+          widget.reward.rewardImage!.imageBytes,
+          fit: BoxFit.cover,
+          width: 100,
+          height: 70,
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.reward.name!,
+                  softWrap: true,
+                  maxLines: null,
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  widget.reward.description!,
+                  softWrap: true,
+                  maxLines: isExpanded ? 25 : 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      isExpanded = !isExpanded;
+                    });
+                  },
+                  child: Text(
+                    isExpanded ? 'Show less' : 'Read more',
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        )
+      ],
     );
   }
 }

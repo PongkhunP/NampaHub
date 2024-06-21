@@ -2,10 +2,10 @@ const pool = require("../configuration/db");
 const getFunctions = require("./getter.model");
 
 class UserModel {
-  static async createUserAccount(email, password, conn) {
+  static async createUserAccount(email, password, rating, conn) {
     try {
-      const query = "INSERT INTO user_account (email, password) VALUES (?, ?)";
-      const result = await conn.query(query, [email, password]);
+      const query = "INSERT INTO user_account (email, password, rating) VALUES (?, ?, ?)";
+      const result = await conn.query(query, [email, password, rating]);
       return result;
     } catch (err) {
       throw err;
@@ -98,7 +98,7 @@ class UserModel {
 
   static async showUserAccount(user_id, conn) {
     try {
-      const query = "Select email , rating from user_account where Id = ?";
+      const query = "Select email , rating , password from user_account where Id = ?";
       const result = await conn.query(query, [user_id]);
       return result;
     } catch (error) {
@@ -121,6 +121,27 @@ class UserModel {
     try {
       const query =
         "Select edu_name, start_year, end_year from user_education_data where user_id = ?";
+      const result = await conn.query(query, [user_id]);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async showUserWork(user_id, conn) {
+    try {
+      const query =
+        "Select company_name, jobs from user_work_data where user_id = ?";
+      const result = await conn.query(query, [user_id]);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async showUserlocation(user_id, conn) {
+    try {
+      const query = "Select country, city from user_location where user_id = ?";
       const result = await conn.query(query, [user_id]);
       return result;
     } catch (error) {
@@ -165,8 +186,13 @@ class UserModel {
   }
   static async updateUserEdu(edu_name, start_year, end_year, user_id, conn) {
     try {
-      const query =
-        "UPDATE user_education_data SET edu_name = ?, start_year =?, end_year = ? WHERE user_id = ?;";
+      // const query =
+      //   "UPDATE user_education_data SET edu_name = ?, start_year =?, end_year = ? WHERE user_id = ?;";
+        const query = `INSERT INTO user_education_data (edu_name, start_year, end_year, user_id) VALUES (?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE 
+                      edu_name = VALUES(edu_name),
+                      start_year = VALUES(start_year),
+                      end_year = VALUES(end_year);`;
       const result = await conn.query(query, [
         edu_name,
         start_year,
