@@ -176,15 +176,18 @@ class ActivityMedia {
 class ActivityDate {
   DateTime? startRegisDate;
   DateTime? endRegisDate;
-  DateTime? eventDate;
+  DateTime? startEventDate;
+  DateTime? endEventDate;
 
-  ActivityDate({this.startRegisDate, this.endRegisDate, this.eventDate});
+  ActivityDate({this.startRegisDate, this.endRegisDate, this.startEventDate , this.endEventDate});
 
   Map<String, dynamic> toJson() {
     return {
       'start_regis_date': startRegisDate?.toIso8601String(),
       'end_regis_date': endRegisDate?.toIso8601String(),
-      'event_date': eventDate?.toIso8601String(),
+      'start_event_date': startEventDate?.toIso8601String(),
+      'end_event_date': endEventDate?.toIso8601String(),
+
     };
   }
 
@@ -192,7 +195,8 @@ class ActivityDate {
     return ActivityDate(
       startRegisDate: DateTime.parse(json['start_regis_date']),
       endRegisDate: DateTime.parse(json['end_regis_date']),
-      eventDate: DateTime.parse(json['event_date']),
+      startEventDate: DateTime.parse(json['start_event_date']),
+      endEventDate: DateTime.parse(json['end_event_date']),
     );
   }
 }
