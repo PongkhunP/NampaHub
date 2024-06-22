@@ -4,11 +4,13 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nampa_hub/mid/token_manager.dart';
 import 'package:nampa_hub/src/activity.dart';
 import 'package:nampa_hub/src/config.dart';
+import 'package:http/http.dart' as http;
 
 class Logo extends StatelessWidget {
-  const Logo({super.key});
+  const Logo({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,13 +32,14 @@ class ActivityCard extends StatelessWidget {
   final double cardWidth;
   final double cardHeight;
 
-  const ActivityCard(
-      {super.key,
-      required this.activityName,
-      required this.location,
-      required this.imageBytes,
-      required this.cardHeight,
-      required this.cardWidth});
+  const ActivityCard({
+    Key? key,
+    required this.activityName,
+    required this.location,
+    required this.imageBytes,
+    required this.cardHeight,
+    required this.cardWidth,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +69,9 @@ class ActivityCard extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 image: DecorationImage(
-                    image: MemoryImage(imageBytes), fit: BoxFit.contain),
+                  image: MemoryImage(imageBytes),
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
           ),
@@ -97,9 +102,9 @@ class OnGoingHistoryCard extends StatelessWidget {
   final ActivityListItem activity;
 
   const OnGoingHistoryCard({
-    super.key,
+    Key? key,
     required this.activity,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -130,7 +135,8 @@ class OnGoingHistoryCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 image: DecorationImage(
                   image: MemoryImage(
-                      base64Decode(activity.activityMedia.base64Image)),
+                    base64Decode(activity.activityMedia.base64Image),
+                  ),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -143,7 +149,7 @@ class OnGoingHistoryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text( 
+                  Text(
                     activity.title,
                     style: const TextStyle(
                         fontSize: 15, fontWeight: FontWeight.bold),
@@ -191,66 +197,62 @@ class SuccessHistoryCard extends StatefulWidget {
 
 class _SuccessHistoryCardState extends State<SuccessHistoryCard> {
   double? _rating;
-  bool showSubmitButton = false;
   bool submitted = false; // Flag to track if rating is submitted
 
-  void _showRatingDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Rate ${widget.activity.title}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Tap a star to rate:'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  5,
-                  (index) => IconButton(
-                    icon: Icon(
-                      index < (_rating ?? 0)
-                          ? Icons.star
-                          : Icons.star_border,
-                      color: Colors.amber,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _rating = index + 1.toDouble();
-                        showSubmitButton = true; // Show submit button
-                      });
-                    },
-                  ),
-                ),
-              ),
-              if (showSubmitButton && !submitted)
-                ElevatedButton(
-                  onPressed: () {
-                    // Replace with your actual submission logic
-                    print('Submitting rating: $_rating');
-                    setState(() {
-                      submitted = true; // Mark as submitted
-                      showSubmitButton = false; // Hide submit button after submitting
-                    });
-                    Navigator.of(context).pop(); // Close the dialog
-                  },
-                  child: Text('Submit'),
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text('Close'),
-            ),
-          ],
-        );
+  // void _submitRating(double rating) {
+  //   // Simulate an API call or local storage update
+  //   print('Submitting rating: $rating');
+  //   setState(() {
+  //     _rating = rating;
+  //     submitted = true; // Mark as submitted
+  //   });
+
+ Future<void> _submitRating(double rating) async {
+  try {
+    final token = await TokenManager.getToken();
+    if (token == null) {
+      print('User not authenticated');
+      return;
+    }
+    
+    // Replace with your actual API endpoint
+    final uri = Uri.parse('http://192.168.1.57:1111/activity/update-rating');
+    
+    print('Submitting rating to: $uri');
+    final response = await http.patch(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
       },
+      body: jsonEncode({
+        'activity_id': widget.activity.id,
+        'rating': rating,
+      }),
     );
+    
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+    
+    if (response.statusCode == 200) {
+      print("Rating submitted successfully");
+      setState(() {
+        _rating = rating;
+        submitted = true;
+      });
+    } else {
+      print("Failed to submit rating: ${response.statusCode}");
+      print("Response body: ${response.body}");
+    }
+  } catch (e) {
+    print("Error submitting rating: $e");
+    if (e is http.ClientException) {
+      print("Network error: ${e.message}");
+    } else if (e is FormatException) {
+      print("Error parsing response: ${e.message}");
+    }
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -304,38 +306,33 @@ class _SuccessHistoryCardState extends State<SuccessHistoryCard> {
                     style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                   const SizedBox(height: 5),
-                  ElevatedButton(
-  onPressed: () {
-    _showRatingDialog(); // Show rating dialog when button is pressed
-  },
-  style: ButtonStyle(
-    padding: MaterialStateProperty.all<EdgeInsets>(
-      EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0), // Adjust padding as needed
-    ),
-    backgroundColor: MaterialStateProperty.all<Color>(Colors.blue), // Adjust background color if needed
-    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-      RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0), // Adjust border radius as needed
-      ),
-    ),
-  ),
-  child: Text(
-    'Rating here',
-    style: TextStyle(
-      fontSize: 12.0, // Adjust font size as needed
-      fontWeight: FontWeight.bold,
-      color: Colors.white, // Adjust text color if needed
-    ),
-  ),
-),
+                  if (submitted && _rating != null)
+                    Padding(
+                      padding:
+                          const EdgeInsets.only(top: 8), // Adjusted padding
+                      child: Text(
+                        'Rating ${_rating!.toInt()}/5',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  if (!submitted || _rating == null)
+                    RatingButton(
+                      onPressed: _submitRating,
+                    ),
+                  const SizedBox(height: 8), // Adjusted padding
                   const Padding(
-                    padding: EdgeInsets.only(top: 5),
+                    padding: EdgeInsets.only(top: 8), // Adjusted padding
                     child: Text(
                       'Participation',
                       style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.black54,
-                          fontWeight: FontWeight.bold),
+                        fontSize: 15,
+                        color: Colors.black54,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   Text(
@@ -352,13 +349,111 @@ class _SuccessHistoryCardState extends State<SuccessHistoryCard> {
   }
 }
 
+class RatingButton extends StatefulWidget {
+  final Function(double) onPressed;
+
+  const RatingButton({Key? key, required this.onPressed}) : super(key: key);
+
+  @override
+  _RatingButtonState createState() => _RatingButtonState();
+}
+
+class _RatingButtonState extends State<RatingButton> {
+  double? _rating;
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () {
+        _showRatingDialog(context);
+      },
+      style: ButtonStyle(
+        padding: MaterialStateProperty.all<EdgeInsets>(
+          EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+        ),
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+        ),
+      ),
+      child: Text(
+        _rating != null ? 'Rating ${_rating!.toInt()}/5' : 'Rating here',
+        style: TextStyle(
+          fontSize: 12.0,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  void _showRatingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Rate this activity'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Tap a star to rate:'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      5,
+                      (index) => IconButton(
+                        icon: Icon(
+                          index < (_rating ?? 0)
+                              ? Icons.star
+                              : Icons.star_border,
+                          color: Colors.amber,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _rating = index + 1.toDouble();
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Close'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_rating != null) {
+                      widget.onPressed(_rating!);
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Text('Submit'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
 class CreatedHistoryCard extends StatelessWidget {
   final ActivityListItem activity;
 
   const CreatedHistoryCard({
-    super.key,
+    Key? key,
     required this.activity,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -402,7 +497,7 @@ class CreatedHistoryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text( 
+                  Text(
                     activity.title,
                     style: const TextStyle(
                         fontSize: 15, fontWeight: FontWeight.bold),

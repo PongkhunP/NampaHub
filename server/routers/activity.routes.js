@@ -6,7 +6,7 @@ const error = require("../middleware/error");
 
 const router = express.Router();
 
-
+// Existing routes
 router.get("/", authenticateToken, ActivityController.getActivities, error);
 router.get("/activity-details", authenticateToken, ActivityController.getActivity, error);
 router.get("/history" , authenticateToken , ActivityController.getHistory, error);
@@ -24,5 +24,8 @@ router.post(
 );
 
 router.patch("/edit-activity" , authenticateToken , ActivityController.editActivity, error);
+
+// New route for updating activity rating
+router.patch("/update-rating", authenticateToken, ActivityController.updateRating, error);
 
 module.exports = router;

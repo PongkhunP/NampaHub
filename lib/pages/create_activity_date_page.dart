@@ -108,6 +108,7 @@ class _CreateActivityDateState extends State<CreateActivityDate> {
         _endEventDate = picked;
       });
     }
+    print("SelectEnd Reigster : $_selectEndRegisterDate(context)");
   }
 
   @override

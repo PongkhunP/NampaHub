@@ -336,9 +336,20 @@ class ActivityModel {
       const result = await conn.query(query, [user_id]);
       return result;
     } catch (error) {
-      throw(error);
+      throw error;
+    }
+  }
+
+  static async updateActivityRating(activity_id,rating, conn){
+    try {
+      const query = "UPDATE activity SET rating = ? WHERE Id = ?"
+      const result = await conn.query(query,[rating, activity_id]);
+      return result;
+    } catch (error) {
+      throw error;
     }
   }
 }
+
 
 module.exports = ActivityModel;
