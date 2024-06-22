@@ -27,7 +27,7 @@ class ActivityService {
         activityData.contact_email || user_email,
         activityData.organizer || user_email,
         activityData.status || "On-going",
-        activityData.rating || 0,
+        // activityData.rating || 0,
         user_id,
         conn
       );
@@ -47,7 +47,8 @@ class ActivityService {
       await ActivityModel.createActivityDate(
         activityData.activity_date.start_regis_date,
         activityData.activity_date.end_regis_date,
-        activityData.activity_date.event_date,
+        activityData.activity_date.start_event_date,
+        activityData.activity_date.end_event_date,
         activity_id,
         conn
       );
@@ -246,7 +247,7 @@ class ActivityService {
 
       return counts;
     } catch (error) {
-      next(error);
+      throw(error);
     } finally {
       if (conn) {
         await conn.release();
@@ -287,7 +288,7 @@ class ActivityService {
       const activity_date = await ActivityModel.getActivityDate(
         conn,
         { field: "activity_id", operator: "=", value: activity_id },
-        ["start_regis_date", "end_regis_date", "event_date"]
+        ["start_regis_date", "end_regis_date", "start_event_date","end_event_date"]
       );
 
       const activity_media = await ActivityModel.getActivityMedia(

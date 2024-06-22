@@ -10,13 +10,12 @@ class ActivityModel {
     contact_email,
     organizer,
     status,
-    rating,
     user_id,
     conn
   ) {
     try {
       const query =
-        "INSERT INTO activity (title, description, goals, activity_type, contact_email, organizer, status, rating, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        "INSERT INTO activity (title, description, goals, activity_type, contact_email, organizer, status, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
       const result = await conn.query(query, [
         title,
         description,
@@ -25,7 +24,6 @@ class ActivityModel {
         contact_email,
         organizer,
         status,
-        rating,
         user_id,
       ]);
       return result;
@@ -57,17 +55,19 @@ class ActivityModel {
   static async createActivityDate(
     start_regis_date,
     end_regis_date,
-    event_date,
+    start_event_date,
+    end_event_date,
     activity_id,
     conn
   ) {
     try {
       const query =
-        "INSERT INTO activity_date (start_regis_date, end_regis_date, event_date, activity_id) VALUES (?, ?, ?, ?)";
+        "INSERT INTO activity_date (start_regis_date, end_regis_date, start_event_date, end_event_date, activity_id) VALUES (?, ?, ?, ?, ?)";
       const result = await conn.query(query, [
         start_regis_date,
         end_regis_date,
-        event_date,
+        start_event_date,
+        end_event_date,
         activity_id,
       ]);
       return result;
@@ -257,6 +257,8 @@ class ActivityModel {
       "Id",
       "start_regis_date",
       "end_regis_date",
+      "start_event_date",
+      "end_event_date",
       "event_id",
       "activity_id",
     ];
@@ -334,7 +336,7 @@ class ActivityModel {
       const result = await conn.query(query, [user_id]);
       return result;
     } catch (error) {
-      next(error);
+      throw(error);
     }
   }
 }

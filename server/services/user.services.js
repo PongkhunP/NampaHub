@@ -165,7 +165,7 @@ class UserService {
       conn = await pool.getConnection();
       await conn.beginTransaction;
 
-      const activity_ids = await ActivityModel.getActivityOfUser(user_id);
+      const activity_ids = await ActivityModel.getActivityOfUser(user_id, conn);
       console.log("Activity ids : " + activity_ids);
       
       for(const activity_id in activity_ids)

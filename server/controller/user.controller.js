@@ -74,7 +74,7 @@ exports.delete_user = async (req, res, next) => {
     const user_data = await Userservice.deleteUserAccount(user_id);
     res.json({ status: true, success: user_data });
   } catch (err) {
-    next(error);
+    throw(err);
   }
 };
 
