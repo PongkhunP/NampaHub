@@ -136,7 +136,7 @@ class User {
     return User(
         email: json['email'],
         password: '',
-        rating: (json['rating']).toDouble() ?? 0,
+        rating: (json['rating']) ?? 0,
         firstname: json['first_name'],
         middlename: json['middle_name'] ?? '',
         lastname: json['last_name'],
