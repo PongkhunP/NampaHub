@@ -207,52 +207,48 @@ class _SuccessHistoryCardState extends State<SuccessHistoryCard> {
   //     submitted = true; // Mark as submitted
   //   });
 
- Future<void> _submitRating(double rating) async {
-  try {
-    final token = await TokenManager.getToken();
-    if (token == null) {
-      print('User not authenticated');
-      return;
-    }
-    
-    // Replace with your actual API endpoint
-    final uri = Uri.parse('http://192.168.1.57:1111/activity/update-rating');
-    
-    print('Submitting rating to: $uri');
-    final response = await http.patch(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({
-        'activity_id': widget.activity.id,
-        'rating': rating,
-      }),
-    );
-    
-    print('Response status: ${response.statusCode}');
-    print('Response body: ${response.body}');
-    
-    if (response.statusCode == 200) {
-      print("Rating submitted successfully");
-      setState(() {
-        _rating = rating;
-        submitted = true;
-      });
-    } else {
-      print("Failed to submit rating: ${response.statusCode}");
-      print("Response body: ${response.body}");
-    }
-  } catch (e) {
-    print("Error submitting rating: $e");
-    if (e is http.ClientException) {
-      print("Network error: ${e.message}");
-    } else if (e is FormatException) {
-      print("Error parsing response: ${e.message}");
+  Future<void> _submitRating(double rating) async {
+    try {
+      final token = await TokenManager.getToken();
+      if (token == null) {
+        print('User not authenticated');
+        return;
+      }
+
+      final response = await http.patch(
+        Uri.parse(updaterating),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'activity_id': widget.activity.id,
+          'rating': rating,
+        }),
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        print("Rating submitted successfully");
+        setState(() {
+          _rating = rating;
+          submitted = true;
+        });
+      } else {
+        print("Failed to submit rating: ${response.statusCode}");
+        print("Response body: ${response.body}");
+      }
+    } catch (e) {
+      print("Error submitting rating: $e");
+      if (e is http.ClientException) {
+        print("Network error: ${e.message}");
+      } else if (e is FormatException) {
+        print("Error parsing response: ${e.message}");
+      }
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -306,23 +302,30 @@ class _SuccessHistoryCardState extends State<SuccessHistoryCard> {
                     style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                   const SizedBox(height: 5),
-                  if (submitted && _rating != null)
-                    Padding(
-                      padding:
-                          const EdgeInsets.only(top: 8), // Adjusted padding
-                      child: Text(
-                        'Rating ${_rating!.toInt()}/5',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.black54,
-                          fontWeight: FontWeight.bold,
+
+                  Row(
+                    children: [
+                      Padding(
+                        padding:
+                            const EdgeInsets.only(top: 8), // Adjusted padding
+                        child: Text(
+                          widget.activity.rating.toString(),
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                  if (!submitted || _rating == null)
-                    RatingButton(
-                      onPressed: _submitRating,
-                    ),
+                      if (!submitted || _rating == null)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 20),
+                          child: RatingButton(
+                            onPressed: _submitRating,
+                          ),
+                        ),
+                    ],
+                  ),
                   const SizedBox(height: 8), // Adjusted padding
                   const Padding(
                     padding: EdgeInsets.only(top: 8), // Adjusted padding
@@ -379,7 +382,7 @@ class _RatingButtonState extends State<RatingButton> {
         ),
       ),
       child: Text(
-        _rating != null ? 'Rating ${_rating!.toInt()}/5' : 'Rating here',
+        'Rating here',
         style: TextStyle(
           fontSize: 12.0,
           fontWeight: FontWeight.bold,

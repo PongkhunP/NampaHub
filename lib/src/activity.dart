@@ -338,7 +338,7 @@ class ActivityListItem {
       activityMedia; // Use ActivityMedia instead of String for the image
   final int userId;
   int participants;
-
+  double rating;
 
   ActivityListItem({
     required this.id,
@@ -347,6 +347,7 @@ class ActivityListItem {
     required this.activityMedia,
     required this.userId,
     this.participants = 0,
+    this.rating = 0,
   });
 
   factory ActivityListItem.fromJson(Map<String, dynamic> json) {
@@ -361,6 +362,7 @@ class ActivityListItem {
               'activity_image']), // Convert buffer to base64 string in ActivityMedia
       userId: json['user_id'],
       participants: json['participants'] ?? 0,
+      rating: json['rating'] ?? 0,
     );
   }
 
