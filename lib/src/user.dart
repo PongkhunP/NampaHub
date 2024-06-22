@@ -116,6 +116,7 @@ class User {
     return {
       'email': email,
       'password': password,
+      'rating': rating,
       'firstname': firstname,
       'lastname': lastname,
       'middlename': middlename,

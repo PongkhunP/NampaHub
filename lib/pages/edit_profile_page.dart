@@ -18,16 +18,16 @@ class MyEditProfilePage extends StatefulWidget {
 class MyEditProfilePageState extends State<MyEditProfilePage> {
   DateTime? _startYear;
   DateTime? _endYear;
-  DateTime? _eventDate;
+  bool _isSubmitting = false;
 
-  final TextEditingController _firstnameController = TextEditingController();
-  final TextEditingController _middlenameController = TextEditingController();
-  final TextEditingController _lastnameController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController();
-  final TextEditingController _countryController = TextEditingController();
-  final TextEditingController _edunameController = TextEditingController();
+  late TextEditingController _firstnameController;
+  late TextEditingController _middlenameController;
+  late TextEditingController _lastnameController;
+  late TextEditingController _ageController;
+  late TextEditingController _phoneController;
+  late TextEditingController _cityController;
+  late TextEditingController _countryController;
+  late TextEditingController _edunameController;
 
   final _formkey = GlobalKey<FormState>();
 
@@ -35,6 +35,7 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
   bool _isPersonalInfoVisible = false;
   bool _isLocationVisible = false;
   bool _isEducationVisible = false;
+  bool _isWorkVisible = false;
 
   @override
   void dispose() {
@@ -43,7 +44,7 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
     _lastnameController.dispose();
     _ageController.dispose();
     _phoneController.dispose();
-    _locationController.dispose();
+    _cityController.dispose();
     _countryController.dispose();
     _edunameController.dispose();
     super.dispose();
@@ -51,48 +52,76 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
 
   @override
   void initState() {
+    _firstnameController = TextEditingController(text: widget.user.firstname);
+    _middlenameController = TextEditingController(text: widget.user.middlename);
+    _lastnameController = TextEditingController(text: widget.user.lastname);
+    _ageController = TextEditingController(text: widget.user.age.toString());
+    _phoneController = TextEditingController(text: widget.user.phone);
+    _cityController = TextEditingController(text: widget.user.city);
+    _countryController = TextEditingController(text: widget.user.country);
+    _edunameController = TextEditingController(text: widget.user.instituteName);
+
     super.initState();
   }
 
   void validateAndSubmit() {
-    if (_formkey.currentState!.validate() && _isAtLeastOneFieldFilled()) {
-      _firstnameController.text.isNotEmpty
-          ? widget.user.setFirstName(_firstnameController.text)
-          : null;
-      _middlenameController.text.isNotEmpty
-          ? widget.user.setMiddleName(_middlenameController.text)
-          : null;
-      _lastnameController.text.isNotEmpty
-          ? widget.user.setLastName(_lastnameController.text)
-          : null;
-      _ageController.text.isNotEmpty
-          ? widget.user.setAge(int.parse(_ageController.text))
-          : null;
-      _locationController.text.isNotEmpty
-          ? widget.user.setCity(_locationController.text)
-          : null;
-      _phoneController.text.isNotEmpty
-          ? widget.user.setPhone(_phoneController.text)
-          : null;
-      _countryController.text.isNotEmpty
-          ? widget.user.setCountry(_countryController.text)
-          : null;
-      _edunameController.text.isNotEmpty
-          ? widget.user.setInstituteName(_edunameController.text)
-          : null;
-      _startYear != null
-          ? widget.user.setStartDate(_startYear.toString())
-          : null;
-      _endYear != null ? widget.user.setEndDate(_endYear.toString()) : null;
+    setState(() {
+      _isSubmitting = true;
+    });
 
-      _editUser();
+    if (_formkey.currentState!.validate() && _isAtLeastOneFieldFilled()) {
+      try {
+        _firstnameController.text.isNotEmpty
+            ? widget.user.setFirstName(_firstnameController.text)
+            : null;
+        _middlenameController.text.isNotEmpty
+            ? widget.user.setMiddleName(_middlenameController.text)
+            : null;
+        _lastnameController.text.isNotEmpty
+            ? widget.user.setLastName(_lastnameController.text)
+            : null;
+        _ageController.text.isNotEmpty
+            ? widget.user.setAge(int.parse(_ageController.text))
+            : null;
+        _cityController.text.isNotEmpty
+            ? widget.user.setCity(_cityController.text)
+            : null;
+        _phoneController.text.isNotEmpty
+            ? widget.user.setPhone(_phoneController.text)
+            : null;
+        _countryController.text.isNotEmpty
+            ? widget.user.setCountry(_countryController.text)
+            : null;
+        _edunameController.text.isNotEmpty
+            ? widget.user.setInstituteName(_edunameController.text)
+            : null;
+        _startYear != null
+            ? widget.user.setStartDate(_startYear.toString())
+            : null;
+        _endYear != null ? widget.user.setEndDate(_endYear.toString()) : null;
+
+        _editUser();
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$e'),
+          ),
+        );
+      } finally {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     } else {
       // Show a message to the user that at least one field is required
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please fill in at least one field.'),
+          content: Text('Please fill in neccessary field.'),
         ),
       );
+      setState(() {
+        _isSubmitting = false;
+      });
     }
   }
 
@@ -102,7 +131,7 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
         _lastnameController.text.isNotEmpty ||
         _ageController.text.isNotEmpty ||
         _phoneController.text.isNotEmpty ||
-        _locationController.text.isNotEmpty ||
+        _cityController.text.isNotEmpty ||
         _countryController.text.isNotEmpty ||
         _edunameController.text.isNotEmpty;
   }
@@ -227,9 +256,9 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
                 key: _formkey,
                 child: Column(
                   children: [
-                    Stack(
+                    const Stack(
                       children: [
-                        const Center(
+                        Center(
                           child: Padding(
                             padding: EdgeInsets.only(top: 30),
                             child: ClipOval(
@@ -240,16 +269,6 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
                                 fit: BoxFit.cover,
                               ),
                             ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 30,
-                          right: 100,
-                          child: IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.black),
-                            onPressed: () {
-                              // Add functionality to change the image
-                            },
                           ),
                         ),
                       ],
@@ -293,7 +312,7 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
                               child: TextFormField(
                                 controller: _firstnameController,
                                 decoration: const InputDecoration(
-                                  hintText: 'New Firstname',
+                                  labelText: 'First name',
                                   border: InputBorder.none,
                                   contentPadding:
                                       EdgeInsets.symmetric(vertical: 15),
@@ -321,7 +340,7 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
                               child: TextFormField(
                                 controller: _middlenameController,
                                 decoration: const InputDecoration(
-                                  hintText: 'New Middle Name',
+                                  labelText: 'Middle name',
                                   border: InputBorder.none,
                                   contentPadding:
                                       EdgeInsets.symmetric(vertical: 15),
@@ -349,7 +368,7 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
                               child: TextFormField(
                                 controller: _lastnameController,
                                 decoration: const InputDecoration(
-                                  hintText: 'New Last Name',
+                                  labelText: 'Last name',
                                   border: InputBorder.none,
                                   contentPadding:
                                       EdgeInsets.symmetric(vertical: 15),
@@ -378,7 +397,7 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
                                 keyboardType: TextInputType.number,
                                 controller: _ageController,
                                 decoration: const InputDecoration(
-                                  hintText: 'New Age',
+                                  labelText: 'Age',
                                   border: InputBorder.none,
                                   contentPadding:
                                       EdgeInsets.symmetric(vertical: 15),
@@ -406,7 +425,7 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
                               child: TextFormField(
                                 controller: _phoneController,
                                 decoration: const InputDecoration(
-                                  hintText: 'New Phone',
+                                  labelText: 'Phone',
                                   border: InputBorder.none,
                                   contentPadding:
                                       EdgeInsets.symmetric(vertical: 15),
@@ -457,9 +476,9 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: TextFormField(
-                                controller: _locationController,
+                                controller: _cityController,
                                 decoration: const InputDecoration(
-                                  hintText: 'New Location',
+                                  labelText: 'City',
                                   border: InputBorder.none,
                                   contentPadding:
                                       EdgeInsets.symmetric(vertical: 15),
@@ -487,7 +506,7 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
                               child: TextFormField(
                                 controller: _countryController,
                                 decoration: const InputDecoration(
-                                  hintText: 'New Country',
+                                  labelText: 'Country',
                                   border: InputBorder.none,
                                   contentPadding:
                                       EdgeInsets.symmetric(vertical: 15),
@@ -540,7 +559,7 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
                               child: TextFormField(
                                 controller: _edunameController,
                                 decoration: const InputDecoration(
-                                  hintText: 'New Education Name',
+                                  labelText: 'Education name',
                                   border: InputBorder.none,
                                   contentPadding:
                                       EdgeInsets.symmetric(vertical: 15),
@@ -556,35 +575,59 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
                           ),
                           Padding(
                             padding: const EdgeInsets.only(
-                                left: 30, right: 30, bottom: 5, top: 5),
-                            child: Container(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 30),
-                              margin: const EdgeInsets.symmetric(vertical: 10),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: GestureDetector(
-                                onTap: () => _selectStartYear(context),
-                                child: TextFormField(
-                                  enabled: false,
-                                  decoration: InputDecoration(
-                                    hintText: _startYear == null
-                                        ? 'Start Year'
-                                        : _startYear.toString().split('-')[0],
-                                    border: InputBorder.none,
-                                    contentPadding:
-                                        EdgeInsets.symmetric(vertical: 15),
+                                left: 25, right: 25, bottom: 5, top: 5),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[200],
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
+                                  child: GestureDetector(
+                                    onTap: () => _selectStartYear(context),
+                                    child: TextFormField(
+                                      enabled: false,
+                                      decoration: InputDecoration(
+                                        hintText: _startYear == null
+                                            ? 'Start Year'
+                                            : _startYear
+                                                .toString()
+                                                .split('-')[0],
+                                        border: InputBorder.none,
+                                        contentPadding:
+                                            EdgeInsets.symmetric(vertical: 15),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                FormField<String>(
                                   validator: (value) {
-                                    if (_startYear == null) {
+                                    if (_startYear == null &&
+                                        _endYear != null) {
                                       return 'Select start year';
                                     }
                                     return null;
                                   },
+                                  builder: (FormFieldState<String> field) {
+                                    return field.hasError
+                                        ? Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 10, top: 5),
+                                            child: Text(
+                                              field.errorText!,
+                                              style: TextStyle(
+                                                color: Colors.red,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          )
+                                        : Container();
+                                  },
                                 ),
-                              ),
+                              ],
                             ),
                           ),
                           Padding(
@@ -607,16 +650,98 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
                                         ? 'End Year'
                                         : _endYear.toString().split('-')[0],
                                     border: InputBorder.none,
-                                    contentPadding:
-                                        EdgeInsets.symmetric(vertical: 15),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 15),
                                   ),
                                   validator: (value) {
-                                    if (_endYear == null) {
+                                    if (_endYear == null &&
+                                        _startYear != null) {
                                       return 'Select End year';
                                     }
                                     return null;
                                   },
                                 ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ListTile(
+                      title: const Text(
+                        'Work information',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Color(0xFF1B8900),
+                        ),
+                      ),
+                      trailing: Icon(_isWorkVisible
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down),
+                      onTap: () {
+                        setState(() {
+                          _isWorkVisible = !_isWorkVisible;
+                        });
+                      },
+                    ),
+                    Visibility(
+                      visible: _isWorkVisible,
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 30, right: 30, bottom: 10, top: 10),
+                            child: Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 30),
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: TextFormField(
+                                controller: _cityController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Company',
+                                  border: InputBorder.none,
+                                  contentPadding:
+                                      EdgeInsets.symmetric(vertical: 15),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return null; // Optional field, so no error if empty
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 30, right: 30, bottom: 10, top: 10),
+                            child: Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 30),
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: TextFormField(
+                                controller: _countryController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Job',
+                                  border: InputBorder.none,
+                                  contentPadding:
+                                      EdgeInsets.symmetric(vertical: 15),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return null; // Optional field, so no error if empty
+                                  }
+                                  return null;
+                                },
                               ),
                             ),
                           ),
@@ -636,22 +761,25 @@ class MyEditProfilePageState extends State<MyEditProfilePage> {
               color: Colors.white,
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
-                onPressed: validateAndSubmit,
+                onPressed: _isSubmitting ? null : validateAndSubmit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1B8900),
+                  backgroundColor:
+                      _isSubmitting ? Colors.grey : const Color(0xFF1B8900),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   minimumSize: const Size.fromHeight(50), // Set button height
                 ),
-                child: const Text(
-                  'Submit',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: _isSubmitting
+                    ? const CircularProgressIndicator()
+                    : const Text(
+                        'Submit',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
             ),
           ),

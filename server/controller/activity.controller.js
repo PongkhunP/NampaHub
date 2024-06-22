@@ -48,10 +48,20 @@ exports.getActivity = async (req, res, next) => {
 exports.getHistory = async (req, res, next) => {
     try {
         const status = req.query.status;
-        console.log("Status from request : " + status);
         const activities = await ActivityService.getHistoryActivity(status);
 
         res.json({status : true , success : activities});
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.getActivityCount = async (req, res, next) => {
+    try {
+        const user_id = req.user._id;
+        const activityStatus = await ActivityService.getActivityCount(user_id);
+
+        res.json({status : true , success : activityStatus});
     } catch (error) {
         next(error);
     }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nampa_hub/mid/activity_services.dart';
 import 'package:nampa_hub/pages/register_form_personal_page.dart';
 import 'package:nampa_hub/src/user.dart';
 import 'package:nampa_hub/src/widget.dart';
@@ -17,18 +18,54 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _isSubmitting = false;
 
-  void validateForm() {
+  void validateForm() async {
+    setState(() {
+      _isSubmitting = true;
+    });
+
     if (_formKey.currentState!.validate()) {
-      Navigator.push(context, MaterialPageRoute(
-        builder: (context) {
-          return MyRegisterPersonalInfo(
-            user: User(
-                email: _emailController.text,
-                password: _passwordController.text),
-          );
-        },
-      ));
+      try {
+        bool isUserExisted =
+            await ActivityService.validateEmail(_emailController.text);
+
+        if (!isUserExisted) {
+          Navigator.push(context, MaterialPageRoute(
+            builder: (context) {
+              return MyRegisterPersonalInfo(
+                user: User(
+                    email: _emailController.text,
+                    password: _passwordController.text),
+              );
+            },
+          ));
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(
+                'Email already exist.',
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Color(0xFFDA2D4A),
+            ));
+          }
+        } 
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+              'Error validating email: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: const Color(0xFFDA2D4A),
+          ));
+        }
+      } finally {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
   }
 
@@ -158,9 +195,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   height: 30,
                 ),
                 GestureDetector(
-                  onTap: () {
-                    validateForm();
-                  },
+                  onTap: _isSubmitting ? null : validateForm,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 15),
                     child: Row(
@@ -168,19 +203,23 @@ class _RegisterPageState extends State<RegisterPage> {
                         Expanded(
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 13),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF1B8900),
+                            decoration: BoxDecoration(
+                              color: _isSubmitting
+                                  ? Colors.grey
+                                  : const Color(0xFF1B8900),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(7)),
+                                  const BorderRadius.all(Radius.circular(7)),
                             ),
-                            child: const Center(
-                              child: Text(
-                                'Next',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    fontSize: 16),
-                              ),
+                            child: Center(
+                              child: _isSubmitting
+                                  ? const CircularProgressIndicator()
+                                  : const Text(
+                                      'Next',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                          fontSize: 16),
+                                    ),
                             ),
                           ),
                         ),

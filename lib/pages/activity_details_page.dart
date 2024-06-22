@@ -482,7 +482,13 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 2,
                                     )
-                                  : const Text(''),
+                                  : user.companyName.isNotEmpty
+                                      ? Text(
+                                          user.companyName,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
+                                        )
+                                      : const SizedBox(),
                               Row(
                                 children: [
                                   Icon(

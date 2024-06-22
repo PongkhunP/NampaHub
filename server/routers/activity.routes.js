@@ -6,6 +6,12 @@ const error = require("../middleware/error");
 
 const router = express.Router();
 
+
+router.get("/", authenticateToken, ActivityController.getActivities, error);
+router.get("/activity-details", authenticateToken, ActivityController.getActivity, error);
+router.get("/history" , authenticateToken , ActivityController.getHistory, error);
+router.get("/activity-count", authenticateToken , ActivityController.getActivityCount, error);
+
 router.post(
   "/create-activity",
   authenticateToken,
@@ -17,9 +23,6 @@ router.post(
   error
 );
 
-router.get("/", authenticateToken, ActivityController.getActivities, error);
-router.get("/activity-details", authenticateToken, ActivityController.getActivity, error);
-router.get("/history" , authenticateToken , ActivityController.getHistory, error);
 router.patch("/edit-activity" , authenticateToken , ActivityController.editActivity, error);
 
 module.exports = router;

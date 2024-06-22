@@ -3,8 +3,6 @@ const bcrypt = require("bcrypt");
 const UserModel = require("../models/user.model");
 const ActivityModel = require("../models/activity.model");
 const pool = require("../configuration/db");
-const ActivityModel = require("../models/activity.model")
-const { fields } = require("../configuration/upload");
 
 class UserService {
   static async registerUser(userDetails) {
@@ -72,7 +70,7 @@ class UserService {
       await conn.commit();
       return { insertId: userId, ...user_account};
     } catch (err) {
-      next(error);
+      throw error;
     } finally {
       if(conn)
       {
@@ -80,22 +78,6 @@ class UserService {
       }
     }
   }
-
-  static async checkUser(email) {
-    return await UserModel.checkUser(email);
-  }
-
-  static async validatePassword(inputPassword, actualPassword) {
-    if (!inputPassword || !actualPassword) {
-      throw new Error("Password validation failed due to missing data");
-    }
-    return await bcrypt.compare(inputPassword, actualPassword);
-  }
-
-  static async generateToken(tokenData, secreteKey, jwt_expired) {
-    return jwt.sign(tokenData, secreteKey, { expiresIn: jwt_expired });
-  }
-
   static async showUserInfo(user_id) {
     let conn;
     try {
@@ -119,7 +101,7 @@ class UserService {
       // const userInfo = {user_account , user_personal , user_edu , user_work, user_location}
       return userInfo;
     } catch (error) {
-      next(error);
+      throw error;
     } finally {
       if(conn)
         {
@@ -128,30 +110,6 @@ class UserService {
     }
   }
 
-  static async deleteUserAccount(user_id)
-  {
-    let conn; 
-    try {
-      conn = await pool.getConnection();
-      await conn.beginTransaction;
-
-      const activity_ids = await ActivityModel.getActivityOfUser(user_id, conn);
-      
-      console.log("Activity ids : " + activity_ids);
-      
-      for(const activity_id in activity_ids)
-      {
-        console.log("Activity ids : " + activity_id);
-        await UserModel.deleteActivityData(activity_id, conn);
-      }
-      const delete_user = await UserModel.deleteAllUserRelatedData(user_id, conn);
-
-      await conn.commit();
-      return true;
-    } catch (error) {
-      throw error;
-    }
-  }
   static async EditUser(userDetails, user_Id){
     let conn;
     try {
@@ -159,12 +117,6 @@ class UserService {
       conn = await pool.getConnection();
       conn.beginTransaction();
 
-      await UserModel.updateUserAccount(
-        userDetails.email,
-        userDetails.password,
-        user_Id,
-        conn
-      );
       await UserModel.updateUserEdu(
         userDetails.edu_name,
         userDetails.start_year,
@@ -182,9 +134,9 @@ class UserService {
         userDetails.firstname,
         userDetails.lastname,
         userDetails.middlename,
+        user_Id,
         userDetails.age,
         userDetails.phone,
-        user_Id,
         conn
       );
       await UserModel.updateUserWorkData(
@@ -197,7 +149,7 @@ class UserService {
       await conn.commit();
       return true;
     } catch (error) {
-      next(error);
+      throw error;
     } finally {
       if(conn)
         {
@@ -226,7 +178,7 @@ class UserService {
       await conn.commit();
       return true;
     } catch (error) {
-      next(error);
+      throw error;
     } finally {
       if(conn)
         {
@@ -234,6 +186,22 @@ class UserService {
         }
     }
   }
+
+  static async checkUser(email) {
+    return await UserModel.checkUser(email);
+  }
+
+  static async validatePassword(inputPassword, actualPassword) {
+    if (!inputPassword || !actualPassword) {
+      throw new Error("Password validation failed due to missing data");
+    }
+    return await bcrypt.compare(inputPassword, actualPassword);
+  }
+
+  static async generateToken(tokenData, secreteKey, jwt_expired) {
+    return jwt.sign(tokenData, secreteKey, { expiresIn: jwt_expired });
+  }
+
 }
 
 module.exports = UserService;

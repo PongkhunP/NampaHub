@@ -10,6 +10,7 @@ import 'package:nampa_hub/mid/token_manager.dart';
 import 'package:nampa_hub/src/user.dart';
 import 'package:nampa_hub/src/widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:nampa_hub/mid/activity_services.dart';
 
 class MyProfilePage extends StatefulWidget {
   const MyProfilePage({super.key});
@@ -19,9 +20,12 @@ class MyProfilePage extends StatefulWidget {
 }
 
 class _MyProfilePageState extends State<MyProfilePage> {
+  late Future<Map<String, int>> _futureActivityCount;
+
   @override
   void initState() {
     super.initState();
+    _futureActivityCount = ActivityService.getActivityCount();
   }
 
   Future<void> logout(BuildContext context) async {
@@ -99,7 +103,10 @@ class _MyProfilePageState extends State<MyProfilePage> {
       ),
       body: SingleChildScrollView(
         child: FutureBuilder(
-          future: getUser(),
+          future: Future.wait([
+            getUser(),
+            _futureActivityCount,
+          ]),
           builder: (context, userData) {
             if (userData.hasError) {
               return Text('Error ${userData.error}');
@@ -108,7 +115,9 @@ class _MyProfilePageState extends State<MyProfilePage> {
             } else if (!userData.hasData) {
               return const Text('Unknown user');
             } else {
-              User user = userData.data!;
+              User user = userData.data![0] as User;
+              Map<String, int> activityCounts =
+                  userData.data![1] as Map<String, int>;
 
               return Column(
                 children: [
@@ -147,7 +156,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                             ),
                           ),
                         )
-                      : const Text(""),
+                      : const SizedBox(),
                   user.instituteName.isNotEmpty
                       ? Padding(
                           padding: const EdgeInsets.all(1),
@@ -160,7 +169,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                             ),
                           ),
                         )
-                      : const Text(""),
+                      : const SizedBox(),
                   Padding(
                     padding:
                         const EdgeInsets.only(right: 18, top: 10, bottom: 0),
@@ -195,7 +204,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                         color: Colors.grey[300],
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Column(
@@ -204,7 +213,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                               Text('On going'),
                               SizedBox(height: 5),
                               Text(
-                                '3',
+                                activityCounts['On-going'].toString(),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -218,7 +227,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                               Text('Created'),
                               SizedBox(height: 5),
                               Text(
-                                '0',
+                                activityCounts['Created'].toString(),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -232,21 +241,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                               Text('Success'),
                               SizedBox(height: 5),
                               Text(
-                                '1',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('Cancel'),
-                              SizedBox(height: 5),
-                              Text(
-                                '0',
+                                activityCounts['Success'].toString(),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -267,7 +262,10 @@ class _MyProfilePageState extends State<MyProfilePage> {
                           leading: Icon(Icons.history),
                           title: Text('History'),
                           onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context){return MyHistoryPage();}));
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) {
+                              return MyHistoryPage();
+                            }));
                           },
                         ),
                         ListTile(

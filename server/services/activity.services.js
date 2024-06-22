@@ -218,6 +218,42 @@ class ActivityService {
     }
   }
 
+  static async getActivityCount(user_id)
+  {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+
+      const activity_info = await ActivityModel.getActivityInfo(conn, null , ['status' , 'user_id']);
+
+      let counts = {
+        'On-going': 0,
+        'Success': 0,
+        'Created': 0
+      };
+
+      activity_info.forEach(activity => {
+        if (activity.user_id === user_id) {
+          counts['Created']++;
+        }
+  
+        if (activity.status === 'On-going') {
+          counts['On-going']++;
+        } else if (activity.status === 'Success') {
+          counts['Success']++;
+        }
+      });
+
+      return counts;
+    } catch (error) {
+      next(error);
+    } finally {
+      if (conn) {
+        await conn.release();
+      }
+    }
+  }
+
   static async getActivity(activity_id) {
     let conn;
     try {
