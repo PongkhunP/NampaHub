@@ -172,29 +172,79 @@ class MyHistoryPageState extends State<MyHistoryPage> {
                   } else {
                     List<ActivityListItem> activityList = activitys.data!;
 
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: activityList.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(
-                              bottom: 16, left: 10, right: 10),
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(context, MaterialPageRoute(
-                                builder: (context) {
-                                  return ActivityDetailsPage(
-                                      activityId: activityList[index].id);
-                                },
-                              ));
-                            },
-                            child: ActivityHistoryCard(
-                              activity: activityList[index],
+                    if (_activeButtonLabel == 'On-going') {
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: activityList.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                                bottom: 16, left: 10, right: 10),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(
+                                  builder: (context) {
+                                    return ActivityDetailsPage(
+                                        activityId: activityList[index].id);
+                                  },
+                                ));
+                              },
+                              child: OnGoingHistoryCard(
+                                activity: activityList[index],
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    );
+                          );
+                        },
+                      );
+                    } else if (_activeButtonLabel == 'Success') {
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: activityList.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                                bottom: 16, left: 10, right: 10),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(
+                                  builder: (context) {
+                                    return ActivityDetailsPage(
+                                        activityId: activityList[index].id);
+                                  },
+                                ));
+                              },
+                              child: SuccessHistoryCard(
+                                activity: activityList[index],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    } else {
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: activityList.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                                bottom: 16, left: 10, right: 10),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(
+                                  builder: (context) {
+                                    return ActivityDetailsPage(
+                                        activityId: activityList[index].id);
+                                  },
+                                ));
+                              },
+                              child: CreatedHistoryCard(
+                                activity: activityList[index],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }
                   }
                 },
               ),
