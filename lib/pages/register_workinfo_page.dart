@@ -20,6 +20,7 @@ class _MyRegisterState extends State<MyRegisterWorkInfo> {
   final TextEditingController _companyNameController = TextEditingController();
   String? selectedJob;
   bool isAgreed = false;
+  bool _isRegistering = false;
   late SharedPreferences prefs;
   List<String> joblist = ['Student', 'Police', 'Teacher', 'Marine'];
 
@@ -41,6 +42,10 @@ class _MyRegisterState extends State<MyRegisterWorkInfo> {
   }
 
   void _registerUser() async {
+    setState(() {
+      _isRegistering = true;
+    });
+
     try {
       final response = await http.post(
         Uri.parse(registration),
@@ -56,17 +61,21 @@ class _MyRegisterState extends State<MyRegisterWorkInfo> {
         prefs.setString('token', myToken);
 
         if (mounted) {
-            Navigator.pushReplacement(context, MaterialPageRoute(
-              builder: (context) {
-                return MyHomePage();
-              },
-            ));
-          }
+          Navigator.pushReplacement(context, MaterialPageRoute(
+            builder: (context) {
+              return MyHomePage();
+            },
+          ));
+        }
       } else {
         throw Exception('Failed to register user');
       }
     } catch (e) {
       print(e);
+    } finally {
+      setState(() {
+        _isRegistering = false;
+      });
     }
   }
 
@@ -172,7 +181,7 @@ class _MyRegisterState extends State<MyRegisterWorkInfo> {
                     padding: const EdgeInsets.all(10),
                     child: TextFormField(
                       decoration: const InputDecoration(
-                        hintText: 'Company name',
+                        hintText: 'Company name (Optional)',
                         filled: true,
                         fillColor: Color.fromARGB(255, 230, 229, 229),
                         enabledBorder: OutlineInputBorder(
@@ -219,7 +228,7 @@ class _MyRegisterState extends State<MyRegisterWorkInfo> {
                             borderRadius: BorderRadius.all(Radius.circular(7)),
                             borderSide: BorderSide.none),
                       ),
-                      hint: const Text("Job"),
+                      hint: const Text("Job (Optional)"),
                       dropdownColor: Colors.grey,
                       icon: const Icon(Icons.arrow_drop_down),
                       iconSize: 36,
@@ -275,7 +284,6 @@ class _MyRegisterState extends State<MyRegisterWorkInfo> {
                             ),
                           ],
                         ),
-                        
                       ],
                     ),
                   ),
@@ -284,42 +292,25 @@ class _MyRegisterState extends State<MyRegisterWorkInfo> {
                     width: 350,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: isAgreed ? _validateAndRegister : null,
+                      onPressed: isAgreed && !_isRegistering
+                          ? _validateAndRegister
+                          : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            isAgreed ? const Color(0xFF1B8900) : Colors.grey,
+                        backgroundColor: isAgreed && !_isRegistering
+                            ? const Color(0xFF1B8900)
+                            : Colors.grey,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius:
                               BorderRadius.circular(10), // Circle shape
                         ),
                       ),
-                      child: const Text(
-                        'Sign up',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: 350,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: isAgreed ? _validateAndRegister : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(10), // Circle shape
-                        ),
-                      ),
-                      child: Text(
-                        'Skip',
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: !isAgreed ? Colors.grey : Colors.black),
-                      ),
+                      child: _isRegistering
+                          ? const CircularProgressIndicator()
+                          : const Text(
+                              'Sign up',
+                              style: TextStyle(fontSize: 18),
+                            ),
                     ),
                   ),
                 ],

@@ -21,6 +21,7 @@ class MyUploadActivityImages extends StatefulWidget {
 class MyUploadActivityImagesState extends State<MyUploadActivityImages> {
   XFile? _imageData;
   String displayImage = '';
+  bool _isSubmitting = false;
 
   void _validateAndSubmit() {
     if (_imageData != null) {
@@ -28,7 +29,7 @@ class MyUploadActivityImagesState extends State<MyUploadActivityImages> {
       ActivityMedia activityMedia = ActivityMedia(activityImage: base64Image);
       widget.activity.setActivityMedia(activityMedia);
       widget.activity.activitySupport!.currentParticipants = 0;
-      
+
       _createActivity();
     } else {
       // Handle the case when no image is selected
@@ -39,14 +40,16 @@ class MyUploadActivityImagesState extends State<MyUploadActivityImages> {
   }
 
   Future<void> _createActivity() async {
+    setState(() {
+      _isSubmitting = true;
+    });
+
     try {
       final token = await TokenManager.getToken();
       if (token == null) {
         print('User not authenticated');
         return;
       }
-        print("Token : $token");
-        print("Activity : ${widget.activity.activitySupport!.currentParticipants}");
 
       final uri = Uri.parse(createactivity);
       final request = http.MultipartRequest('POST', uri);
@@ -79,7 +82,6 @@ class MyUploadActivityImagesState extends State<MyUploadActivityImages> {
         }
       }
 
-      print(request);
       final response = await request.send();
 
       final responseBody = await response.stream.bytesToString();
@@ -98,6 +100,10 @@ class MyUploadActivityImagesState extends State<MyUploadActivityImages> {
       }
     } catch (e) {
       print(e);
+    } finally {
+      setState(() {
+        _isSubmitting = false;
+      });
     }
   }
 
@@ -239,9 +245,9 @@ class MyUploadActivityImagesState extends State<MyUploadActivityImages> {
                   width: 350,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: _validateAndSubmit,
+                    onPressed: _isSubmitting ? null : _validateAndSubmit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _imageData == null
+                      backgroundColor: (_imageData == null || _isSubmitting)
                           ? Colors.grey
                           : const Color(0xFF1B8900),
                       foregroundColor: Colors.white,
@@ -249,10 +255,12 @@ class MyUploadActivityImagesState extends State<MyUploadActivityImages> {
                         borderRadius: BorderRadius.circular(10), // Circle shape
                       ),
                     ),
-                    child: const Text(
-                      'Sign up',
-                      style: TextStyle(fontSize: 18),
-                    ),
+                    child: _isSubmitting
+                        ? const CircularProgressIndicator()
+                        : const Text(
+                            'Sign up',
+                            style: TextStyle(fontSize: 18),
+                          ),
                   ),
                 ),
               ),

@@ -4,7 +4,6 @@ const Userservice = require("../services/user.services");
 exports.register = async (req, res, next) => {
   try {
     const userDetails = req.body;
-    console.log("User details received:", userDetails); // Log to verify the request body
 
     if (!userDetails.password) {
       console.error("Password is missing in request body"); // Log missing password error
@@ -12,7 +11,6 @@ exports.register = async (req, res, next) => {
 
     const userAccount = await Userservice.registerUser(userDetails);
     const userId = userAccount.insertId;
-    console.log("Id : " + userId);
 
     let tokenData = { _id: userId.toString(), email: userDetails.email };
     const token = await Userservice.generateToken(
@@ -27,43 +25,37 @@ exports.register = async (req, res, next) => {
       token: token,
     });
   } catch (err) {
-    console.error("Error in registration controller:", err);
-    next(err); // Ensure error handling middleware is called
+    next(err); 
   }
 };
 
-exports.login = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    const user = await Userservice.checkUser(email);
+exports.login = async(req,res,next) => {
+    try
+    {
+        const {email , password} = req.body;
+        const user = await Userservice.checkUser(email);
 
-    if (!user) {
-      throw new Error("The following user do not exists in database");
+        if(!user)
+        {
+            throw new Error('The following user do not exists.');
+        }
+
+        const isPasswordValid = await Userservice.validatePassword(password , user.password);
+        
+        if(!isPasswordValid)
+        {
+            throw new Error('Password is Invalid.');
+        }
+        
+        let tokenData = {_id: user.Id , email: user.email};
+
+        const token = await Userservice.generateToken(tokenData, process.env.SECRETKEY, process.env.JWTEXPIRED);
+
+        res.status(200).json({status: true , token: token});
+    }catch(err)
+    {
+      next(err);
     }
-
-    const isPasswordValid = Userservice.validatePassword(
-      password,
-      user.password
-    );
-
-    if (!isPasswordValid) {
-      throw new Error("Password is Invalid");
-    }
-    console.log("User Id : " + user.Id);
-    console.log("Email : " + user.email);
-
-    let tokenData = { _id: user.Id, email: user.email };
-
-    const token = await Userservice.generateToken(
-      tokenData,
-      process.env.SECRETKEY,
-      process.env.JWTEXPIRED
-    );
-
-    res.status(200).json({ status: true, token: token });
-  } catch (err) {
-    throw err;
-  }
 };
 
 exports.show_user = async (req, res, next) => {
@@ -82,18 +74,34 @@ exports.delete_user = async (req, res, next) => {
     const user_data = await Userservice.deleteUserAccount(user_id);
     res.json({ status: true, success: user_data });
   } catch (err) {
-    throw err;
+    next(error);
   }
 };
 
 exports.editUser = async (req, res, next) => {
   try {
     const userDetails = req.body;
-    const user_id = req.user.id;
+    const user_id = req.user._id;
+    const user_email = req.user.email;
 
-    const user_update = await Userservice.EditUser(userDetails, user_id);
-    res.status(200).json({ status: true, success: "Edit user succesfully ",  });
+    console.log("User id : " + user_id);
+    console.log("User email : " + user_email);
+
+    const user_update = await Userservice.EditUser(userDetails,user_id);
+    res.status(200).json({status: true, success: "Edit user succesfully"});
   } catch (error) {
-    throw error;
+    next(error);
   }
 };
+
+exports.validateEmail = async (req, res, next) => {
+  try {
+    const email = req.query.email;
+
+    const user = await Userservice.checkUser(email);
+    const isUserExist = user != null;
+    res.status(200).json({status: true, exists: isUserExist});
+  } catch (error) {
+    next(error);
+  }
+}

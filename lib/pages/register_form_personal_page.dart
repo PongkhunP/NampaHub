@@ -3,8 +3,6 @@ import 'package:nampa_hub/pages/register_location_page.dart';
 import 'package:nampa_hub/src/user.dart';
 import 'package:nampa_hub/src/widget.dart';
 
-final _formkey = GlobalKey<FormState>();
-
 class MyRegisterPersonalInfo extends StatefulWidget {
   final User user;
   const MyRegisterPersonalInfo({super.key, required this.user});
@@ -14,6 +12,7 @@ class MyRegisterPersonalInfo extends StatefulWidget {
 }
 
 class _MyRegisterPersonalInfoState extends State<MyRegisterPersonalInfo> {
+  final _formkey = GlobalKey<FormState>();
   final TextEditingController _firstnameController = TextEditingController();
   final TextEditingController _middlenameController = TextEditingController();
   final TextEditingController _lastnameController = TextEditingController();

@@ -3,7 +3,10 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nampa_hub/mid/activity_services.dart';
+import 'package:nampa_hub/pages/donation.dart';
+import 'package:nampa_hub/pages/edit_activities_page.dart';
 import 'package:nampa_hub/src/activity.dart';
+import 'package:nampa_hub/src/user.dart';
 import 'package:nampa_hub/src/widget.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
@@ -16,7 +19,7 @@ class ActivityDetailsPage extends StatefulWidget {
 }
 
 class _ActivityDetailsPage extends State<ActivityDetailsPage> {
-  late Future<Activity> futureActivity;
+  late Future<Map<String, dynamic>> futureActivity;
 
   @override
   void initState() {
@@ -26,52 +29,126 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
 
   void attendActivity() {}
 
-  void donateActivity() {}
+  void donateActivity() {
+    Navigator.push(context, MaterialPageRoute(
+      builder: (context) {
+        return MyDonation();
+      },
+    ));
+  }
 
-  void editActivity() {}
+  void editActivity(Activity activity) {
+    Navigator.push(context, MaterialPageRoute(
+      builder: (context) {
+        return EditActivityPage(
+          activity: activity,
+        );
+      },
+    ));
+  }
 
-  void showActivityAdditionDetails({List<String> goals = const []}) {
+  void showActivityAdditionDetails(
+      {required BuildContext context,
+      List<String> goals = const [],
+      List<ActivityExpense> expenses = const [],
+      List<ActivityReward> reward = const [],
+      List<User> users = const []}) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Additional Details'),
+          title: const Text('Additional Details'),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                goals.isNotEmpty
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Goals",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 20),
+                if (goals.isNotEmpty) ...[
+                  const Text(
+                    "Goals",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: goals.length,
+                      itemBuilder: (context, index) {
+                        return Row(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4),
+                              child: Icon(
+                                Icons.circle,
+                                color: Colors.black,
+                                size: 10,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                goals[index],
+                                softWrap: true,
+                                maxLines: null,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
+                if (expenses.isNotEmpty) ...[
+                  const Text(
+                    "Expenses",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Table(
+                      border: TableBorder.all(color: Colors.black12),
+                      children: expenses.map((e) {
+                        return TableRow(children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(e.name!),
                           ),
-                          ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: goals.length,
-                            itemBuilder: (context, index) {
-                              return Row(
-                                children: [
-                                  const Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 4),
-                                    child: Icon(
-                                      Icons.circle,
-                                      color: Colors.black,
-                                      size: 10,
-                                    ),
-                                  ),
-                                  Text(goals[index])
-                                ],
-                              );
-                            },
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child:
+                                Text('${e.expense!.toStringAsFixed(0)} Bath'),
                           )
-                        ],
-                      )
-                    : const Text(""),
+                        ]);
+                      }).toList(),
+                    ),
+                  ),
+                ],
+                if (reward.isNotEmpty) ...[
+                  const Text(
+                    "Reward",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  ),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: reward.length,
+                    itemBuilder: (context, index) {
+                      return RewardItem(reward: reward[index]);
+                    },
+                  ),
+                ],
+                const Text(
+                  "Attendance",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                ),
+                if (users.isNotEmpty) ...[
+                  ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: users.length,
+                    itemBuilder: (context, index) {
+                      return Text(users[index].firstname);
+                    },
+                  ),
+                ] else ...[
+                  const Text('There are no one attend to this activity yet'),
+                ]
               ],
             ),
           ),
@@ -122,7 +199,9 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
               } else if (!snapshot.hasData) {
                 return const Center(child: Text('No Activity data'));
               } else {
-                Activity activity = snapshot.data!;
+                final activity = snapshot.data!['activity'] as Activity;
+                final user = snapshot.data!['user'] as User;
+
                 Uint8List imageBytes =
                     base64Decode(activity.activityMedia!.base64Image);
                 return Column(
@@ -156,7 +235,9 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
                                         ),
                                       ),
                                       IconButton(
-                                          onPressed: editActivity,
+                                          onPressed: () {
+                                            editActivity(activity);
+                                          },
                                           icon: const Icon(Icons.edit)),
                                     ],
                                   ),
@@ -240,7 +321,8 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
                               AttendAndDonateButton(
                                   attendFunction: attendActivity,
                                   donateFunction: donateActivity,
-                                  attenFee: 200)
+                                  attenFee:
+                                      activity.activitySupport?.attendFee ?? 0)
                             ],
                           )
                         : Row(
@@ -268,7 +350,9 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
                                           ),
                                         ),
                                         IconButton(
-                                            onPressed: editActivity,
+                                            onPressed: () {
+                                              editActivity(activity);
+                                            },
                                             icon: const Icon(Icons.edit)),
                                       ],
                                     ),
@@ -342,10 +426,11 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
                         ),
                         IconButton(
                             onPressed: () {
-                              showActivityAdditionDetails(goals: [
-                                'Feed the animal',
-                                'travel through the international park'
-                              ]);
+                              showActivityAdditionDetails(
+                                  goals: activity.goals!,
+                                  reward: activity.rewards!,
+                                  expenses: activity.expenses!,
+                                  context: context);
                             },
                             icon:
                                 const Icon(Icons.format_list_bulleted_rounded))
@@ -382,26 +467,34 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
                           color: Colors.red,
                         ),
                         const SizedBox(width: 8),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Ratchanon HeeTad',
+                                '${user.firstname} ${user.middlename} ${user.lastname}',
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 18),
                               ),
-                              Text(
-                                'King Mongkut’s University of Technology Thonburi (KMUTT)',
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 2,
-                              ),
+                              user.instituteName.isNotEmpty
+                                  ? Text(
+                                      user.instituteName,
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 2,
+                                    )
+                                  : user.companyName.isNotEmpty
+                                      ? Text(
+                                          user.companyName,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
+                                        )
+                                      : const SizedBox(),
                               Row(
                                 children: [
                                   Icon(
                                     Icons.star_border_outlined,
                                   ),
-                                  Text('4.6/5'),
+                                  Text(user.rating.toStringAsFixed(1)),
                                 ],
                               ),
                             ],
@@ -439,50 +532,53 @@ class _AttendAndDonateButtonState extends State<AttendAndDonateButton> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 15),
-      child: Row(
-        children: [
-          ElevatedButton(
-            onPressed: widget.attendFunction,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1B8900),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.all(20),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: Text(
-              '${widget.attenFee} bath/person',
-              style: const TextStyle(fontSize: 18),
-            ),
-          ),
-          const SizedBox(width: 20),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-              border: Border.all(
-                color: const Color(0xFF1797BF), // Your border color
-                width: 2.0, // Border width
-              ),
-            ),
-            child: ElevatedButton(
-              onPressed: widget.donateFunction,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            ElevatedButton(
+              onPressed: widget.attendFunction,
               style: ElevatedButton.styleFrom(
-                foregroundColor: const Color(0xFF1797BF),
-                backgroundColor:
-                    Colors.white, // Ensure background color is white
-                padding: const EdgeInsets.all(18),
+                backgroundColor: const Color(0xFF1B8900),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.all(20),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              child: const Text(
-                'Donate',
-                style: TextStyle(fontSize: 18),
+              child: Text(
+                '${widget.attenFee} bath/person',
+                style: const TextStyle(fontSize: 18),
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 20),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                border: Border.all(
+                  color: const Color(0xFF1797BF), // Your border color
+                  width: 2.0, // Border width
+                ),
+              ),
+              child: ElevatedButton(
+                onPressed: widget.donateFunction,
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: const Color(0xFF1797BF),
+                  backgroundColor:
+                      Colors.white, // Ensure background color is white
+                  padding: const EdgeInsets.all(18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  'Donate',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

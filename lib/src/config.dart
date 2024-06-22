@@ -14,8 +14,11 @@ final login = '${url}login';
 final getuser = '${url}show-user';
 final edituser = '${url}edit-user';
 final deleteuser = '${url}delete-user';
+final validateemail = '${url}validate';
 //activity path
 final getactivities = '$url$activity?';
 final getactivity = '$url$activity/activity-details?';
 final createactivity = '$url$activity/create-activity';
-final gethistory ='$url$activity/history';
+final editactivity = '$url$activity/edit-activity';
+final gethistory = '$url$activity/history';
+final getactivitycount = '$url$activity/activity-count';

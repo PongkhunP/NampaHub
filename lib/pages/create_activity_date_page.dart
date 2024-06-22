@@ -3,8 +3,6 @@ import 'package:nampa_hub/pages/create_activity_upload_images.dart';
 import 'package:nampa_hub/src/activity.dart';
 import 'package:nampa_hub/src/widget.dart';
 
-final _formkey = GlobalKey<FormState>();
-
 class CreateActivityDate extends StatefulWidget {
   final Activity activity;
   const CreateActivityDate({super.key, required this.activity});
@@ -14,6 +12,7 @@ class CreateActivityDate extends StatefulWidget {
 }
 
 class _CreateActivityDateState extends State<CreateActivityDate> {
+  final _formkey = GlobalKey<FormState>();
   DateTime? _startRegisterDate;
   DateTime? _endRegisterDate;
   DateTime? _eventDate;
@@ -28,8 +27,6 @@ class _CreateActivityDateState extends State<CreateActivityDate> {
         );
 
         widget.activity.setActivityDate(activityDate);
-
-        widget.activity.printDetails();
 
         Navigator.push(context, MaterialPageRoute(
           builder: (context) {

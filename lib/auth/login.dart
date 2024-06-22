@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:nampa_hub/auth/main_auth.dart';
 import 'package:nampa_hub/pages/home_page.dart';
 import 'package:nampa_hub/src/config.dart';
 import 'package:nampa_hub/src/widget.dart';
@@ -20,9 +21,14 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   late SharedPreferences prefs;
+  bool _isLoading = false;
 
   void loginUser() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
       var regBody = {
         "email": _emailController.text,
         "password": _passwordController.text
@@ -40,20 +46,21 @@ class _LoginPageState extends State<LoginPage> {
         if (jsonResponse['status'] && response.statusCode == 200) {
           var myToken = jsonResponse['token'];
           prefs.setString('token', myToken);
-
+          print("Sign in successfully");
           if (mounted) {
             Navigator.pushReplacement(context, MaterialPageRoute(
               builder: (context) {
-                return MyHomePage();
+                return MainAuth(token: myToken);
               },
             ));
           }
-        } else {
+        } else if (!jsonResponse['status'] && response.statusCode == 500) {
+          print('Error: ${jsonResponse['message']}');
           // Handle error response
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text(
-                'Failed to login',
+                jsonResponse['message'],
                 style: TextStyle(color: Colors.white),
               ),
               backgroundColor: Color(0xFFDA2D4A),
@@ -69,6 +76,10 @@ class _LoginPageState extends State<LoginPage> {
       } catch (e) {
         // Handle any other errors
         print('Error $e');
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -98,6 +109,7 @@ class _LoginPageState extends State<LoginPage> {
           child: Logo(),
         ),
         backgroundColor: const Color(0xFF1B8900),
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -174,6 +186,7 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.all(Radius.circular(7)),
                             borderSide: BorderSide.none)),
                     controller: _passwordController,
+                    obscureText: true,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your password';
@@ -187,7 +200,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    loginUser();
+                    if (!_isLoading) {
+                      loginUser();
+                    }
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -196,19 +211,25 @@ class _LoginPageState extends State<LoginPage> {
                         Expanded(
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 13),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF1B8900),
+                            decoration: BoxDecoration(
+                              color: _isLoading
+                                  ? Colors.grey
+                                  : const Color(0xFF1B8900),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(7)),
+                                  const BorderRadius.all(Radius.circular(7)),
                             ),
-                            child: const Center(
-                              child: Text(
-                                'Sign In',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    fontSize: 16),
-                              ),
+                            child: Center(
+                              child: _isLoading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                    )
+                                  : const Text(
+                                      'Sign In',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                          fontSize: 16),
+                                    ),
                             ),
                           ),
                         ),

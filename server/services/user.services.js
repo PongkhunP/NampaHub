@@ -1,9 +1,8 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const UserModel = require("../models/user.model");
+const ActivityModel = require("../models/activity.model");
 const pool = require("../configuration/db");
-const ActivityModel = require("../models/activity.model")
-const { fields } = require("../configuration/upload");
 
 class UserService {
   static async registerUser(userDetails) {
@@ -21,6 +20,7 @@ class UserService {
       const user_account = await UserModel.createUserAccount(
         userDetails.email,
         hashedPassword,
+        userDetails.rating,
         conn
       );
       const userId = user_account.insertId;
@@ -68,27 +68,16 @@ class UserService {
       }
 
       await conn.commit();
-      return { insertId: userId, ...user_account };
+      return { insertId: userId, ...user_account};
     } catch (err) {
-      throw err;
+      throw error;
+    } finally {
+      if(conn)
+      {
+        await conn.release();
+      }
     }
   }
-
-  static async checkUser(email) {
-    return await UserModel.checkUser(email);
-  }
-
-  static async validatePassword(inputPassword, actualPassword) {
-    if (!inputPassword || !actualPassword) {
-      throw new Error("Password validation failed due to missing data");
-    }
-    return await bcrypt.compare(inputPassword, actualPassword);
-  }
-
-  static async generateToken(tokenData, secreteKey, jwt_expired) {
-    return jwt.sign(tokenData, secreteKey, { expiresIn: jwt_expired });
-  }
-
   static async showUserInfo(user_id) {
     let conn;
     try {
@@ -113,6 +102,59 @@ class UserService {
       return userInfo;
     } catch (error) {
       throw error;
+    } finally {
+      if(conn)
+        {
+          await conn.release();
+        }
+    }
+  }
+
+  static async EditUser(userDetails, user_Id){
+    let conn;
+    try {
+
+      conn = await pool.getConnection();
+      conn.beginTransaction();
+
+      await UserModel.updateUserEdu(
+        userDetails.edu_name,
+        userDetails.start_year,
+        userDetails.end_year,
+        user_Id,
+        conn
+      );
+      await UserModel.updateUserLocation(
+        userDetails.country,
+        userDetails.city,
+        user_Id,
+        conn
+      );
+      await UserModel.updateUserPersonal(
+        userDetails.firstname,
+        userDetails.lastname,
+        userDetails.middlename,
+        user_Id,
+        userDetails.age,
+        userDetails.phone,
+        conn
+      );
+      await UserModel.updateUserWorkData(
+        userDetails.company_name,
+        userDetails.job,
+        user_Id,
+        conn
+      );
+
+      await conn.commit();
+      return true;
+    } catch (error) {
+      throw error;
+    } finally {
+      if(conn)
+        {
+          await conn.release();
+        }
     }
   }
 
@@ -123,8 +165,7 @@ class UserService {
       conn = await pool.getConnection();
       await conn.beginTransaction;
 
-      const activity_ids = await ActivityModel.getActivityOfUser(user_id, conn);
-      
+      const activity_ids = await ActivityModel.getActivityOfUser(user_id);
       console.log("Activity ids : " + activity_ids);
       
       for(const activity_id in activity_ids)
@@ -138,29 +179,29 @@ class UserService {
       return true;
     } catch (error) {
       throw error;
+    } finally {
+      if(conn)
+        {
+          await conn.release();
+        }
     }
   }
-  static async EditUser(userDetails, user_Id){
-    let conn;
-    try {
-        // {email: '', passowd: ""}
-        conn = await pool.getConnection();
-        conn.beginTransaction();
 
-        await UserModel.updateUserAccount(userDetails.email,userDetails.password,user_Id,conn)
-        await UserModel.updateUserEdu(userDetails.edu_name,userDetails.start_year,userDetails.end_year,user_Id,conn)
-        await UserModel.updateUserLocation(userDetails.country,userDetails.city,user_Id,conn)
-        await UserModel.updateUserPersonal(userDetails.firstname,userDetails.lastname,userDetails.middlename,userDetails.age,userDetails.phone,user_Id,conn)
-        await UserModel.updateUserWorkData(userDetails.company_name,userDetails.job,user_Id,conn)
-        
-        await conn.commit();
-        return true;
-    } catch (error) {
-        throw error;
+  static async checkUser(email) {
+    return await UserModel.checkUser(email);
+  }
+
+  static async validatePassword(inputPassword, actualPassword) {
+    if (!inputPassword || !actualPassword) {
+      throw new Error("Password validation failed due to missing data");
     }
+    return await bcrypt.compare(inputPassword, actualPassword);
+  }
+
+  static async generateToken(tokenData, secreteKey, jwt_expired) {
+    return jwt.sign(tokenData, secreteKey, { expiresIn: jwt_expired });
+  }
 
 }
-}
-
 
 module.exports = UserService;

@@ -6,11 +6,11 @@ import 'package:http/http.dart' as http;
 import 'package:nampa_hub/pages/edit_profile_page.dart';
 import 'package:nampa_hub/pages/history_page.dart';
 import 'package:nampa_hub/src/config.dart';
-import 'package:nampa_hub/auth/login.dart';
 import 'package:nampa_hub/mid/token_manager.dart';
 import 'package:nampa_hub/src/user.dart';
 import 'package:nampa_hub/src/widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:nampa_hub/mid/activity_services.dart';
 
 class MyProfilePage extends StatefulWidget {
   const MyProfilePage({super.key});
@@ -20,9 +20,12 @@ class MyProfilePage extends StatefulWidget {
 }
 
 class _MyProfilePageState extends State<MyProfilePage> {
+  late Future<Map<String, int>> _futureActivityCount;
+
   @override
   void initState() {
     super.initState();
+    _futureActivityCount = ActivityService.getActivityCount();
   }
 
   Future<void> logout(BuildContext context) async {
@@ -47,14 +50,10 @@ class _MyProfilePageState extends State<MyProfilePage> {
         'Authorization': 'Bearer $token',
       },
     );
-
-    print("Response : ${response.body}");
-    print("URI : $getuser");
     if (response.statusCode == 200) {
       Map<String, dynamic> body = jsonDecode(response.body);
       if (body['status'] == true) {
         var user = body['success'];
-        print("User data : $user");
         return User.fromJson(user);
       } else {
         throw Exception('Failed to load user: ${body['message']}');
@@ -104,7 +103,10 @@ class _MyProfilePageState extends State<MyProfilePage> {
       ),
       body: SingleChildScrollView(
         child: FutureBuilder(
-          future: getUser(),
+          future: Future.wait([
+            getUser(),
+            _futureActivityCount,
+          ]),
           builder: (context, userData) {
             if (userData.hasError) {
               return Text('Error ${userData.error}');
@@ -113,7 +115,9 @@ class _MyProfilePageState extends State<MyProfilePage> {
             } else if (!userData.hasData) {
               return const Text('Unknown user');
             } else {
-              User user = userData.data!;
+              User user = userData.data![0] as User;
+              Map<String, int> activityCounts =
+                  userData.data![1] as Map<String, int>;
 
               return Column(
                 children: [
@@ -133,8 +137,8 @@ class _MyProfilePageState extends State<MyProfilePage> {
                   Padding(
                     padding: const EdgeInsets.all(10),
                     child: Text(
-                      '${user.firstname} ${user.lastname}',
-                      style: const TextStyle(
+                      '${user.firstname} ${user.middlename} ${user.lastname}',
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -152,7 +156,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                             ),
                           ),
                         )
-                      : const Text(""),
+                      : const SizedBox(),
                   user.instituteName.isNotEmpty
                       ? Padding(
                           padding: const EdgeInsets.all(1),
@@ -165,7 +169,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                             ),
                           ),
                         )
-                      : const Text(""),
+                      : const SizedBox(),
                   Padding(
                     padding:
                         const EdgeInsets.only(right: 18, top: 10, bottom: 0),
@@ -200,7 +204,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                         color: Colors.grey[300],
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Column(
@@ -209,7 +213,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                               Text('On going'),
                               SizedBox(height: 5),
                               Text(
-                                '3',
+                                activityCounts['On-going'].toString(),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -223,7 +227,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                               Text('Created'),
                               SizedBox(height: 5),
                               Text(
-                                '0',
+                                activityCounts['Created'].toString(),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -237,21 +241,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                               Text('Success'),
                               SizedBox(height: 5),
                               Text(
-                                '1',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('Cancel'),
-                              SizedBox(height: 5),
-                              Text(
-                                '0',
+                                activityCounts['Success'].toString(),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -272,16 +262,23 @@ class _MyProfilePageState extends State<MyProfilePage> {
                           leading: Icon(Icons.history),
                           title: Text('History'),
                           onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context){return MyHistoryPage();}));
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) {
+                              return MyHistoryPage();
+                            }));
                           },
                         ),
                         ListTile(
                           leading: Icon(Icons.person),
                           title: Text('Edit account information'),
-                          onTap: (){
-                            Navigator.push(context,MaterialPageRoute(builder: (context) {
-                              return MyEditProfilePage(user: user,);
-                            },));
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(
+                              builder: (context) {
+                                return MyEditProfilePage(
+                                  user: user,
+                                );
+                              },
+                            ));
                           },
                         ),
                         ListTile(
@@ -340,8 +337,8 @@ class _MyProfilePageState extends State<MyProfilePage> {
                           },
                         ),
                         ListTile(
-                          leading: Icon(Icons.delete, color: Colors.red),
-                          title: Text(
+                          leading: const Icon(Icons.delete, color: Colors.red),
+                          title: const Text(
                             'Delete account',
                             style: TextStyle(color: Colors.red),
                           ),

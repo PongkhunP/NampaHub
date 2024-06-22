@@ -3,8 +3,6 @@ import 'package:nampa_hub/pages/create_activity_two_page.dart';
 import 'package:nampa_hub/src/activity.dart';
 import 'package:nampa_hub/src/widget.dart'; // Make sure this import is correct
 
-final _formkey = GlobalKey<FormState>();
-
 class CreateActivityOnePage extends StatefulWidget {
   const CreateActivityOnePage({super.key});
 
@@ -15,6 +13,7 @@ class CreateActivityOnePage extends StatefulWidget {
 List<String> options = ['Marine', 'Forest', 'Other'];
 
 class _CreateActivityOnePageState extends State<CreateActivityOnePage> {
+  final _formkey = GlobalKey<FormState>();
   String currentOption = options[0];
   final List<TextEditingController> _goalControllers = [];
   final TextEditingController _goalController = TextEditingController();
@@ -28,17 +27,19 @@ class _CreateActivityOnePageState extends State<CreateActivityOnePage> {
     if (_formkey.currentState!.validate()) {
       List<String> goals =
           _goalControllers.map((controller) => controller.text).toList();
-      String activity_type = currentOption == options[2]
-          ? _otherOptionController.text
-          : currentOption;
+      String activityType = currentOption;
       Activity activity = Activity(
         title: _activityTitleController.text,
         contactEmail: _emailController.text,
         description: _descriptionController.text,
-        activityType: activity_type,
+        activityType: activityType,
+        status: 'On-going',
         goals: goals,
       );
-      activity.printDetails();
+      print("Activity type : $activityType");
+      for (var goal in goals) {
+        print("Goals : $goal");
+      }
 
       Navigator.push(context, MaterialPageRoute(
         builder: (context) {
@@ -76,6 +77,10 @@ class _CreateActivityOnePageState extends State<CreateActivityOnePage> {
       controller.dispose();
     }
     _goalController.dispose();
+    _activityTitleController.dispose();
+    _descriptionController.dispose();
+    _emailController.dispose();
+    _otherOptionController.dispose();
     super.dispose();
   }
 

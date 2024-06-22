@@ -1,11 +1,14 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:nampa_hub/mid/token_manager.dart';
+import 'package:nampa_hub/pages/activity_details_page.dart';
 import 'package:nampa_hub/src/activity.dart';
+import 'package:nampa_hub/src/config.dart';
 import 'package:nampa_hub/src/widget.dart';
 import 'package:http/http.dart' as http;
-import 'package:nampa_hub/src/config.dart';
 
 class MyHistoryPage extends StatefulWidget {
   const MyHistoryPage({super.key});
@@ -16,6 +19,7 @@ class MyHistoryPage extends StatefulWidget {
 
 class MyHistoryPageState extends State<MyHistoryPage> {
   String? _activeButtonLabel;
+  Future<List<ActivityListItem>>? _futureHistory;
 
   final List<String> activityNames = [
     'Beach Cleanup',
@@ -45,7 +49,7 @@ class MyHistoryPageState extends State<MyHistoryPage> {
   ];
 
   final List<String> statuses = [
-    'On going',
+    'On-going',
     'Success',
     'Success',
     'Canceled',
@@ -55,8 +59,8 @@ class MyHistoryPageState extends State<MyHistoryPage> {
   @override
   void initState() {
     super.initState();
-    _activeButtonLabel =
-        'On going'; // Automatically select 'On going' on page load
+    _activeButtonLabel = 'On-going';
+    _futureHistory = getHistory();
   }
 
   List<int> getFilteredIndexes() {
@@ -71,6 +75,7 @@ class MyHistoryPageState extends State<MyHistoryPage> {
   void _onButtonPressed(String label) {
     setState(() {
       _activeButtonLabel = label;
+      _futureHistory = getHistory();
     });
   }
 
@@ -96,15 +101,15 @@ class MyHistoryPageState extends State<MyHistoryPage> {
         Map<String, dynamic> body = jsonDecode(response.body);
         if (body['status'] == true) {
           List<dynamic> activitiesJson = body['success'];
-          return activitiesJson.map((dynamic activity) => ActivityListItem.fromJson(activity)).toList();
+          return activitiesJson
+              .map((dynamic activity) => ActivityListItem.fromJson(activity))
+              .toList();
+        } else {
+          throw Exception('Failed to load activities: ${body['message']}');
         }
-        else {
-        throw Exception('Failed to load activities: ${body['message']}');
-        }
-      } 
-      else {
-      throw Exception('Failed to load activities');
-    }
+      } else {
+        throw Exception('Failed to load activities');
+      }
     } catch (e) {
       throw e;
     }
@@ -131,7 +136,7 @@ class MyHistoryPageState extends State<MyHistoryPage> {
               child: Row(
                 children: [
                   CustomButton(
-                    label: 'On going',
+                    label: 'On-going',
                     isActive: _activeButtonLabel == 'On-going',
                     onPressed: () => _onButtonPressed('On-going'),
                   ),
@@ -143,12 +148,6 @@ class MyHistoryPageState extends State<MyHistoryPage> {
                   ),
                   const SizedBox(width: 10),
                   CustomButton(
-                    label: 'Canceled',
-                    isActive: _activeButtonLabel == 'Canceled',
-                    onPressed: () => _onButtonPressed('Canceled'),
-                  ),
-                  const SizedBox(width: 10),
-                  CustomButton(
                     label: 'Created',
                     isActive: _activeButtonLabel == 'Created',
                     onPressed: () => _onButtonPressed('Created'),
@@ -157,39 +156,46 @@ class MyHistoryPageState extends State<MyHistoryPage> {
               ),
             ),
             const SizedBox(height: 20),
-            SingleChildScrollView(
+            Expanded(
               child: FutureBuilder(
-                future: getHistory(),
+                future: _futureHistory,
                 builder: (context, activitys) {
-                  if(activitys.hasError){
+                  if (activitys.hasError) {
                     return Text("Error : ${activitys.error}");
-                  }
-                  else if(activitys.connectionState == ConnectionState.waiting){
+                  } else if (activitys.connectionState ==
+                      ConnectionState.waiting) {
                     return const Center(
-                      child : CircularProgressIndicator(),
+                      child: CircularProgressIndicator(),
                     );
-                  }
-                  else if(!activitys.hasData){
-                    return const Text("No Activity found.");
-                  }
-                  else{
+                  } else if (!activitys.hasData || activitys.data == null) {
+                    return const Center(child: Text("No Activity found."));
+                  } else {
                     List<ActivityListItem> activityList = activitys.data!;
-                    return  ListView.builder(
+
+                    return ListView.builder(
                       shrinkWrap: true,
-                  itemCount: activityList.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    
-                    return Padding(
-                      padding:
-                          const EdgeInsets.only(bottom: 16, left: 10, right: 10),
-                      child: ActivityHistoryCard(
-                       activity: activityList[index],
-                      ),
+                      itemCount: activityList.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(
+                              bottom: 16, left: 10, right: 10),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(context, MaterialPageRoute(
+                                builder: (context) {
+                                  return ActivityDetailsPage(
+                                      activityId: activityList[index].id);
+                                },
+                              ));
+                            },
+                            child: ActivityHistoryCard(
+                              activity: activityList[index],
+                            ),
+                          ),
+                        );
+                      },
                     );
-                  },
-                );
                   }
-                  
                 },
               ),
             ),

@@ -30,7 +30,6 @@ class _MyRegisterState extends State<MyRegisterLocation> {
       // Perform your submission logic here
       widget.user.setCountry(selectedCountry!);
       widget.user.setCity(selectedCity!);
-      widget.user.printDetails();
       Navigator.push(context, MaterialPageRoute(
         builder: (context) {
           return MyRegisterEdu( user: widget.user,);
