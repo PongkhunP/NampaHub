@@ -8,6 +8,7 @@ import 'package:nampa_hub/src/activity.dart';
 import 'package:nampa_hub/src/widget.dart';
 import '../mid/activity_services.dart';
 
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
 
@@ -159,6 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 Navigator.push(context, MaterialPageRoute(
                                   builder: (context) {
                                     return const CreateActivityOnePage();
+                                    // return const CreateActivityOnePage();
                                   },
                                 ));
                               },
@@ -171,6 +173,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                               ),
                             ),
+                            
+                
                 ],
                 
               ),
