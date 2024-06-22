@@ -56,6 +56,28 @@ exports.getHistory = async (req, res, next) => {
     }
 }
 
+
+exports.updateRating = async (req, res, next) => {
+    try {
+      const { activity_id, rating } = req.body;
+  
+      // Validate input
+      if (!activity_id || !rating) {
+        return res.status(400).json({ success: false, message: 'Activity ID and rating are required' });
+      }
+  
+      // Convert rating to number if it's a string
+      const numericRating = parseFloat(rating);
+  
+      // Call the service method to update the rating
+      const result = await ActivityService.updateActivityRating(activity_id, numericRating);
+  
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
 exports.getActivityCount = async (req, res, next) => {
     try {
         const user_id = req.user._id;

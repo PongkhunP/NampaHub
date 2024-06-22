@@ -218,35 +218,62 @@ class ActivityService {
     }
   }
 
-  static async getActivityCount(user_id)
-  {
+  static async getActivityCount(user_id) {
     let conn;
     try {
       conn = await pool.getConnection();
 
-      const activity_info = await ActivityModel.getActivityInfo(conn, null , ['status' , 'user_id']);
+      const activity_info = await ActivityModel.getActivityInfo(conn, null, [
+        "status",
+        "user_id",
+      ]);
 
       let counts = {
-        'On-going': 0,
-        'Success': 0,
-        'Created': 0
+        "On-going": 0,
+        Success: 0,
+        Created: 0,
       };
 
-      activity_info.forEach(activity => {
+      activity_info.forEach((activity) => {
         if (activity.user_id === user_id) {
-          counts['Created']++;
+          counts["Created"]++;
         }
-  
-        if (activity.status === 'On-going') {
-          counts['On-going']++;
-        } else if (activity.status === 'Success') {
-          counts['Success']++;
+
+        if (activity.status === "On-going") {
+          counts["On-going"]++;
+        } else if (activity.status === "Success") {
+          counts["Success"]++;
         }
       });
 
       return counts;
     } catch (error) {
       next(error);
+    } finally {
+      if (conn) {
+        await conn.release();
+      }
+    }
+  }
+
+  static async updateActivityRating(activity_id,rating) {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+
+      const result = await ActivityModel.updateActivityRating(
+        activity_id,
+        rating,
+        conn
+      );
+
+      if (!result || result.affectedRows === 0) {
+        throw new Error("Activity not found or rating not updated.");
+      }
+
+      return { success: true, message: "Rating updated successfully" };
+    } catch (error) {
+      throw error;
     } finally {
       if (conn) {
         await conn.release();
@@ -334,10 +361,7 @@ class ActivityService {
     }
   }
 
-  static async getSearchActivity(query)
-  {
-    
-  }
+  static async getSearchActivity(query) {}
 
   static logObject(obj, indent = 0) {
     for (const key in obj) {
@@ -359,15 +383,13 @@ class ActivityService {
       conn = await pool.getConnection();
       await conn.beginTransaction();
 
-      
-
       const activities = await ActivityModel.getActivityInfo(conn, {
         field: "status",
         operator: "=",
         value: status,
       });
-      console.log("status:" + status)
-      console.log("acitivity id: "+ activities)
+      console.log("status:" + status);
+      console.log("acitivity id: " + activities);
 
       for (const activity of activities) {
         const location = await ActivityModel.getActivityLocation(
@@ -389,11 +411,11 @@ class ActivityService {
           activity.activity_image = media[0].activity_image;
         }
         const support = await ActivityModel.getActivitySupport(
-        conn,
-        {field: 'activity_id', operator : "=", value:activity.Id},
-        ["participants"]
+          conn,
+          { field: "activity_id", operator: "=", value: activity.Id },
+          ["participants"]
         );
-        if(support.length > 0){
+        if (support.length > 0) {
           activity.participants = support[0].participants;
         }
       }
