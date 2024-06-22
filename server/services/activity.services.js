@@ -249,7 +249,7 @@ class ActivityService {
 
       return counts;
     } catch (error) {
-      throw(error);
+      throw error;
     } finally {
       if (conn) {
         await conn.release();
@@ -257,7 +257,7 @@ class ActivityService {
     }
   }
 
-  static async updateActivityRating(activity_id,rating) {
+  static async updateActivityRating(activity_id, rating) {
     let conn;
     try {
       conn = await pool.getConnection();
@@ -315,7 +315,12 @@ class ActivityService {
       const activity_date = await ActivityModel.getActivityDate(
         conn,
         { field: "activity_id", operator: "=", value: activity_id },
-        ["start_regis_date", "end_regis_date", "start_event_date","end_event_date"]
+        [
+          "start_regis_date",
+          "end_regis_date",
+          "start_event_date",
+          "end_event_date",
+        ]
       );
 
       const activity_media = await ActivityModel.getActivityMedia(
@@ -423,6 +428,29 @@ class ActivityService {
 
       await conn.commit(); // Commit transaction
       return activities;
+    } catch (error) {
+      if (conn) {
+        await conn.rollback(); // Rollback transaction on error
+      }
+      console.error("Error fetching activities:", error);
+      throw error;
+    } finally {
+      if (conn) {
+        await conn.release();
+      }
+    }
+  }
+  static async getRating( acitivity_id) {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+      const ratingData = await ActivityModel.getActivityRating(
+        acitivity_id,
+        conn,
+      )
+      return ratingData[0].rating
+
+
     } catch (error) {
       if (conn) {
         await conn.rollback(); // Rollback transaction on error

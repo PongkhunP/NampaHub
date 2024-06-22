@@ -96,3 +96,13 @@ exports.editActivity = async (req, res, next) => {
         next(error);
     }
 }
+
+exports.getRating = async (req, res, next) => {
+    try {
+        const acitivity_id = req.query.activity_id;
+        const ratingData = await ActivityService.getRating(acitivity_id )
+        res.json({status : true , success : ratingData});
+    } catch (error) {
+        next(error);
+    }
+}

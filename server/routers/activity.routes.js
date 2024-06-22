@@ -11,6 +11,7 @@ router.get("/", authenticateToken, ActivityController.getActivities, error);
 router.get("/activity-details", authenticateToken, ActivityController.getActivity, error);
 router.get("/history" , authenticateToken , ActivityController.getHistory, error);
 router.get("/activity-count", authenticateToken , ActivityController.getActivityCount, error);
+router.get("/rating", authenticateToken , ActivityController.getRating, error);
 
 router.post(
   "/create-activity",

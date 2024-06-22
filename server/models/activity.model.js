@@ -135,16 +135,11 @@ class ActivityModel {
     }
   }
 
-  static async createActivityExpense(name, expense, activity_id,conn)
-  {
+  static async createActivityExpense(name, expense, activity_id, conn) {
     try {
       const query =
         "INSERT INTO expense (name, expense, activity_id) VALUES (?, ?, ?)";
-      const result = await conn.query(query, [
-        name,
-        expense,
-        activity_id,
-      ]);
+      const result = await conn.query(query, [name, expense, activity_id]);
       return result;
     } catch (error) {
       throw error;
@@ -340,16 +335,25 @@ class ActivityModel {
     }
   }
 
-  static async updateActivityRating(activity_id,rating, conn){
+  static async updateActivityRating(activity_id, rating, conn) {
     try {
-      const query = "UPDATE activity SET rating = ? WHERE Id = ?"
-      const result = await conn.query(query,[rating, activity_id]);
+      const query = "UPDATE activity SET rating = ? WHERE Id = ?";
+      const result = await conn.query(query, [rating, activity_id]);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getActivityRating(activity_id, conn) {
+    try {
+      const query = "SELECT rating from activity WHERE Id = ?";
+      const result = await conn.query(query, [activity_id]);
       return result;
     } catch (error) {
       throw error;
     }
   }
 }
-
 
 module.exports = ActivityModel;
