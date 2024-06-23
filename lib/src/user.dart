@@ -136,7 +136,7 @@ class User {
     return User(
         email: json['email'],
         password: '',
-        rating: (json['rating']) ?? 0,
+        rating: json['rating'] != null ? (json['rating']).toDouble() : 0,
         firstname: json['first_name'],
         middlename: json['middle_name'] ?? '',
         lastname: json['last_name'],
@@ -149,5 +149,39 @@ class User {
         job: json['jobs'] ?? '',
         country: json['country'],
         city: json['city']);
+  }
+}
+
+class Attendee {
+  final int id;
+  final String firstName;
+  final String lastName;
+  final String phone;
+  bool isParticipate;
+
+  Attendee({
+    required this.id,
+    required this.firstName,
+    required this.lastName,
+    required this.phone,
+    this.isParticipate = false,
+  });
+
+  factory Attendee.fromJson(Map<String, dynamic> json) {
+    return Attendee(
+      id: json['id'],
+      firstName: json['first_name'],
+      lastName: json['last_name'],
+      phone: json['phone'],
+      isParticipate: json['isParticipated'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'first_name': firstName,
+      'last_name': lastName,
+      'phone': phone,
+    };
   }
 }

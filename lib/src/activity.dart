@@ -1,9 +1,7 @@
 import 'dart:convert';
 // import 'dart:ffi';
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
-import 'package:nampa_hub/src/config.dart';
 
 class Activity {
   int? id;
@@ -180,7 +178,11 @@ class ActivityDate {
   DateTime? startEventDate;
   DateTime? endEventDate;
 
-  ActivityDate({this.startRegisDate, this.endRegisDate, this.startEventDate , this.endEventDate});
+  ActivityDate(
+      {this.startRegisDate,
+      this.endRegisDate,
+      this.startEventDate,
+      this.endEventDate});
 
   Map<String, dynamic> toJson() {
     return {
@@ -188,7 +190,6 @@ class ActivityDate {
       'end_regis_date': endRegisDate?.toIso8601String(),
       'start_event_date': startEventDate?.toIso8601String(),
       'end_event_date': endEventDate?.toIso8601String(),
-
     };
   }
 
@@ -197,7 +198,8 @@ class ActivityDate {
       startRegisDate: DateTime.parse(json['start_regis_date']),
       endRegisDate: DateTime.parse(json['end_regis_date']),
       startEventDate: DateTime.parse(json['start_event_date']),
-      endEventDate: DateTime.parse(json['end_event_date']),
+      endEventDate: DateTime.parse(
+          json['end_event_date'] ?? DateTime.now().toIso8601String()),
     );
   }
 }
@@ -334,8 +336,7 @@ class ActivityListItem {
   final int id;
   final String title;
   final String eventLocation;
-  final ActivityMedia
-      activityMedia; // Use ActivityMedia instead of String for the image
+  final ActivityMedia activityMedia;
   final int userId;
   int participants;
   double rating;
@@ -362,7 +363,9 @@ class ActivityListItem {
               'activity_image']), // Convert buffer to base64 string in ActivityMedia
       userId: json['user_id'],
       participants: json['participants'] ?? 0,
-      rating: json['rating'] ?? 0,
+      rating: json['rating'] is int
+          ? (json['rating'] as int).toDouble()
+          : double.parse(json['rating']?.toString() ?? '0.0'),
     );
   }
 

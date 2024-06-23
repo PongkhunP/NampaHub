@@ -7,6 +7,7 @@ final url = 'http://$ip:$port/';
 
 //controller
 const activity = 'activity';
+const payment = 'api/payment';
 
 //user path
 final registration = '${url}registration';
@@ -23,3 +24,12 @@ final createactivity = '$url$activity/create-activity';
 final editactivity = '$url$activity/edit-activity';
 final gethistory = '$url$activity/history';
 final getactivitycount = '$url$activity/activity-count';
+final attendactivity = '$url$activity/attend';
+final getattendee = '$url$activity/attendee-list';
+final checkin = '$url$activity/check-in';
+//payment path
+final createorder = '$url$payment/order';
+final captureorder = '$url$payment/capture';
+final attendpaid = '$url$payment/attend-paid';
+final returnpayment = '$url$payment/return';
+final cancelpayment = '$url$payment/cancel';

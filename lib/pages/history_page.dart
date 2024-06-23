@@ -1,8 +1,5 @@
 import 'dart:convert';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:nampa_hub/mid/token_manager.dart';
 import 'package:nampa_hub/pages/activity_details_page.dart';
 import 'package:nampa_hub/src/activity.dart';

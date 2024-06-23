@@ -1,5 +1,8 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Required for TextInputFormatter
+import 'package:nampa_hub/pages/payment_services_test.dart';
 import 'package:nampa_hub/src/widget.dart';
 
 class MyDonation extends StatefulWidget {
@@ -10,7 +13,7 @@ class MyDonation extends StatefulWidget {
 }
 
 class MyDonationState extends State<MyDonation> {
-  int selectedAmount = 0; // Variable to store the selected amount
+  double selectedAmount = 0; // Variable to store the selected amount
   TextEditingController amountController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -18,6 +21,14 @@ class MyDonationState extends State<MyDonation> {
   void dispose() {
     amountController.dispose();
     super.dispose();
+  }
+
+  void _confirmDonation() {
+    Navigator.push(context, MaterialPageRoute(
+      builder: (context) {
+        return PayPalPayment(attendFee: selectedAmount,);
+      },
+    ));
   }
 
   @override
@@ -91,13 +102,17 @@ class MyDonationState extends State<MyDonation> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          backgroundColor: selectedAmount == 100 ? Colors.green : Colors.transparent,
+                          backgroundColor: selectedAmount == 100
+                              ? Colors.green
+                              : Colors.transparent,
                         ),
                         child: Text(
                           '100 B',
                           style: TextStyle(
                             fontSize: 18,
-                            color: selectedAmount == 100 ? Colors.white : Colors.green,
+                            color: selectedAmount == 100
+                                ? Colors.white
+                                : Colors.green,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -121,13 +136,17 @@ class MyDonationState extends State<MyDonation> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          backgroundColor: selectedAmount == 300 ? Colors.green : Colors.transparent,
+                          backgroundColor: selectedAmount == 300
+                              ? Colors.green
+                              : Colors.transparent,
                         ),
                         child: Text(
                           '300 B',
                           style: TextStyle(
                             fontSize: 18,
-                            color: selectedAmount == 300 ? Colors.white : Colors.green,
+                            color: selectedAmount == 300
+                                ? Colors.white
+                                : Colors.green,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -151,13 +170,17 @@ class MyDonationState extends State<MyDonation> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          backgroundColor: selectedAmount == 500 ? Colors.green : Colors.transparent,
+                          backgroundColor: selectedAmount == 500
+                              ? Colors.green
+                              : Colors.transparent,
                         ),
                         child: Text(
                           '500 B',
                           style: TextStyle(
                             fontSize: 18,
-                            color: selectedAmount == 500 ? Colors.white : Colors.green,
+                            color: selectedAmount == 500
+                                ? Colors.white
+                                : Colors.green,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -193,7 +216,7 @@ class MyDonationState extends State<MyDonation> {
                             if (value.isEmpty) {
                               selectedAmount = 0;
                             } else {
-                              selectedAmount = int.parse(value);
+                              selectedAmount = double.parse(value);
                             }
                           });
                         },
@@ -210,7 +233,8 @@ class MyDonationState extends State<MyDonation> {
                                 const SizedBox(width: 10),
                                 Text(
                                   "Confirm donation, I’ll support $selectedAmount \n to this campaign",
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
@@ -220,20 +244,27 @@ class MyDonationState extends State<MyDonation> {
                               height: 45, // Adjust the width as needed
                               child: ElevatedButton(
                                 onPressed: () {
+                                  _confirmDonation();
                                   if (_formKey.currentState!.validate()) {
                                     // Add your submission logic here
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Donation of $selectedAmount B submitted')),
+                                      SnackBar(
+                                          content: Text(
+                                              'Donation of $selectedAmount B submitted')),
                                     );
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.yellow, // Background color
+                                  backgroundColor:
+                                      Colors.yellow, // Background color
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
-                                child: const Text('Confirm',style: TextStyle(fontWeight: FontWeight.bold),),
+                                child: const Text(
+                                  'Confirm',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ),
                           ],

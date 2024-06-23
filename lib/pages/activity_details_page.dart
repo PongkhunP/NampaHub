@@ -1,10 +1,13 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:nampa_hub/mid/activity_services.dart';
 import 'package:nampa_hub/pages/donation.dart';
 import 'package:nampa_hub/pages/edit_activities_page.dart';
+import 'package:nampa_hub/pages/payment_services_test.dart';
 import 'package:nampa_hub/src/activity.dart';
 import 'package:nampa_hub/src/user.dart';
 import 'package:nampa_hub/src/widget.dart';
@@ -20,14 +23,45 @@ class ActivityDetailsPage extends StatefulWidget {
 
 class _ActivityDetailsPage extends State<ActivityDetailsPage> {
   late Future<Map<String, dynamic>> futureActivity;
+  late Future<List<Attendee>> futureAttendee;
+  Map<int, bool> _attendanceChecked = {};
+
+  double _rating = 0;
 
   @override
   void initState() {
     super.initState();
     futureActivity = ActivityService.getActivityDetails(widget.activityId);
+    futureAttendee = ActivityService.getAttendees(widget.activityId);
+    futureAttendee.then((attendees) {
+      setState(() {
+        for (var attendee in attendees) {
+          _attendanceChecked[attendee.id] = attendee.isParticipate;
+        }
+      });
+    });
   }
 
-  void attendActivity() {}
+  bool isDateOutdated(DateTime date) {
+    DateTime currentDate = DateTime.now();
+
+    return date.isBefore(currentDate);
+  }
+
+  void attendActivity(double attendFee) {
+    if (attendFee != 0) {
+      // Navigator.push(context, MaterialPageRoute(
+      //   builder: (context) {
+      //     return PayPalPayment(
+      //       attendFee: attendFee,
+      //     );
+      //   },
+      // ));
+      ActivityService.attendActivity(context, widget.activityId);
+    } else {
+      ActivityService.attendActivity(context, widget.activityId);
+    }
+  }
 
   void donateActivity() {
     Navigator.push(context, MaterialPageRoute(
@@ -52,7 +86,7 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
       List<String> goals = const [],
       List<ActivityExpense> expenses = const [],
       List<ActivityReward> reward = const [],
-      List<User> users = const []}) {
+      bool isOwner = false}) {
     showDialog(
       context: context,
       builder: (context) {
@@ -104,7 +138,8 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Table(
-                      border: TableBorder.all(color: Colors.black12),
+                      border: TableBorder.all(
+                          color: const Color.fromARGB(31, 245, 219, 219)),
                       children: expenses.map((e) {
                         return TableRow(children: [
                           Padding(
@@ -138,17 +173,223 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
                   "Attendance",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                 ),
-                if (users.isNotEmpty) ...[
-                  ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: users.length,
-                    itemBuilder: (context, index) {
-                      return Text(users[index].firstname);
-                    },
+                FutureBuilder<List<Attendee>>(
+                  future: futureAttendee,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Text(
+                          'There are no one attend to this activity yet');
+                    } else {
+                      if (_attendanceChecked.isEmpty) {
+                        for (var attendee in snapshot.data!) {
+                          _attendanceChecked[attendee.id] =
+                              attendee.isParticipate;
+                        }
+                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Table(
+                          border: TableBorder.all(color: Colors.black12),
+                          children: [
+                            TableRow(children: [
+                              if (isOwner)
+                                const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text('Attendance',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                ),
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('First Name',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Last Name',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Phone',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                            ]),
+                            ...snapshot.data!.map((attendee) {
+                              return TableRow(children: [
+                                if (isOwner)
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Checkbox(
+                                      value: _attendanceChecked[attendee.id],
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          _attendanceChecked[attendee.id] =
+                                              value!;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(attendee.firstName),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(attendee.lastName),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(attendee.phone),
+                                ),
+                              ]);
+                            }),
+                          ],
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            if (isOwner && _attendanceChecked.isNotEmpty) ...[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Close'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  await ActivityService.checkIn(
+                      widget.activityId, _attendanceChecked);
+                  print('Confirmed attendance: $_attendanceChecked');
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Confirm'),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  void showOwnerInformation(User user) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            'Activity Owner',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                  child: Container(
+                    height: 100,
+                    width: 100,
+                    color: Colors.red,
                   ),
-                ] else ...[
-                  const Text('There are no one attend to this activity yet'),
-                ]
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Text(
+                    '${user.firstname} ${user.middlename} ${user.lastname}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ),
+                if (user.companyName.isNotEmpty) ...[
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: Text(
+                      'Company : ${user.lastname}',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                ],
+                if (user.instituteName.isNotEmpty) ...[
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: Text(
+                      'Institute : ${user.instituteName}',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                ],
+                const Divider(),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Text(
+                    'Phone : ${user.phone}',
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Email : ',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                      Text(
+                        user.email,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      )
+                    ],
+                  ),
+                ),
+                const Divider(),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Text(
+                    'Location : ${user.country}, ${user.city}',
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: List.generate(
+                      5,
+                      (index) => IconButton(
+                        icon: Icon(
+                          index < _rating ? Icons.star : Icons.star_border,
+                          color: Colors.amber,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _rating = index + 1.toDouble();
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -201,6 +442,7 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
               } else {
                 final activity = snapshot.data!['activity'] as Activity;
                 final user = snapshot.data!['user'] as User;
+                final isOwner = snapshot.data!['is_owner'];
 
                 Uint8List imageBytes =
                     base64Decode(activity.activityMedia!.base64Image);
@@ -234,11 +476,13 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
                                               fontWeight: FontWeight.bold),
                                         ),
                                       ),
-                                      IconButton(
-                                          onPressed: () {
-                                            editActivity(activity);
-                                          },
-                                          icon: const Icon(Icons.edit)),
+                                      isOwner
+                                          ? IconButton(
+                                              onPressed: () {
+                                                editActivity(activity);
+                                              },
+                                              icon: const Icon(Icons.edit))
+                                          : const SizedBox(),
                                     ],
                                   ),
                                   const SizedBox(height: 5),
@@ -319,10 +563,14 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
                                 ],
                               ),
                               AttendAndDonateButton(
-                                  attendFunction: attendActivity,
-                                  donateFunction: donateActivity,
-                                  attenFee:
-                                      activity.activitySupport?.attendFee ?? 0)
+                                attendFunction: () => attendActivity(
+                                    activity.activitySupport?.attendFee ?? 0),
+                                donateFunction: donateActivity,
+                                attenFee:
+                                    activity.activitySupport?.attendFee ?? 0,
+                                isOutdated: isDateOutdated(
+                                    activity.activityDate!.endRegisDate!),
+                              )
                             ],
                           )
                         : Row(
@@ -404,11 +652,16 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
                                       ],
                                     ),
                                     AttendAndDonateButton(
-                                        attendFunction: attendActivity,
-                                        donateFunction: donateActivity,
-                                        attenFee: activity
-                                                .activitySupport?.attendFee ??
-                                            0)
+                                      attendFunction: () => attendActivity(
+                                          activity.activitySupport?.attendFee ??
+                                              0),
+                                      donateFunction: donateActivity,
+                                      attenFee:
+                                          activity.activitySupport?.attendFee ??
+                                              0,
+                                      isOutdated: isDateOutdated(
+                                          activity.activityDate!.endRegisDate!),
+                                    )
                                   ],
                                 ),
                               ),
@@ -430,6 +683,7 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
                                   goals: activity.goals!,
                                   reward: activity.rewards!,
                                   expenses: activity.expenses!,
+                                  isOwner: isOwner,
                                   context: context);
                             },
                             icon:
@@ -459,48 +713,52 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                     ),
                     const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Container(
-                          height: 100,
-                          width: 100,
-                          color: Colors.red,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${user.firstname} ${user.middlename} ${user.lastname}',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 18),
-                              ),
-                              user.instituteName.isNotEmpty
-                                  ? Text(
-                                      user.instituteName,
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 2,
-                                    )
-                                  : user.companyName.isNotEmpty
-                                      ? Text(
-                                          user.companyName,
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 2,
-                                        )
-                                      : const SizedBox(),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.star_border_outlined,
-                                  ),
-                                  Text(user.rating.toStringAsFixed(1)),
-                                ],
-                              ),
-                            ],
+                    GestureDetector(
+                      onTap: () => showOwnerInformation(user),
+                      child: Row(
+                        children: [
+                          Container(
+                            height: 100,
+                            width: 100,
+                            color: Colors.red,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${user.firstname} ${user.middlename} ${user.lastname}',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18),
+                                ),
+                                user.instituteName.isNotEmpty
+                                    ? Text(
+                                        user.instituteName,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 2,
+                                      )
+                                    : user.companyName.isNotEmpty
+                                        ? Text(
+                                            user.companyName,
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 2,
+                                          )
+                                        : const SizedBox(),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.star_border_outlined,
+                                    ),
+                                    Text(user.rating.toStringAsFixed(1)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 );
@@ -517,11 +775,13 @@ class AttendAndDonateButton extends StatefulWidget {
   final double attenFee;
   final VoidCallback attendFunction;
   final VoidCallback donateFunction;
+  final bool isOutdated;
   const AttendAndDonateButton(
       {super.key,
       required this.attendFunction,
       required this.donateFunction,
-      required this.attenFee});
+      required this.attenFee,
+      required this.isOutdated});
 
   @override
   State<AttendAndDonateButton> createState() => _AttendAndDonateButtonState();
@@ -537,9 +797,10 @@ class _AttendAndDonateButtonState extends State<AttendAndDonateButton> {
         child: Row(
           children: [
             ElevatedButton(
-              onPressed: widget.attendFunction,
+              onPressed: widget.isOutdated ? null : widget.attendFunction,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1B8900),
+                backgroundColor:
+                    widget.isOutdated ? Colors.grey : const Color(0xFF1B8900),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.all(20),
                 shape: RoundedRectangleBorder(
@@ -547,7 +808,7 @@ class _AttendAndDonateButtonState extends State<AttendAndDonateButton> {
                 ),
               ),
               child: Text(
-                '${widget.attenFee} bath/person',
+                widget.isOutdated ? 'Close' : '${widget.attenFee} bath/person',
                 style: const TextStyle(fontSize: 18),
               ),
             ),
