@@ -16,6 +16,7 @@ final getuser = '${url}show-user';
 final edituser = '${url}edit-user';
 final deleteuser = '${url}delete-user';
 final validateemail = '${url}validate';
+final updateuserrating ='${url}updateuser-rating';
 //activity path
 final getactivities = '$url$activity?';
 final updaterating = '$url$activity/update-rating';

@@ -327,6 +327,16 @@ class UserModel {
       if (conn) conn.release();
     }
   }
+
+  static async updateUserRating(Id, rating, conn) {
+    try {
+      const query = "UPDATE user_account SET rating = ? WHERE Id = ?";
+      const result = await conn.query(query, [rating, Id]);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 module.exports = UserModel;

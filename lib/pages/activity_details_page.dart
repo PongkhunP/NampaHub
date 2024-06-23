@@ -4,14 +4,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:http/http.dart';
 import 'package:nampa_hub/mid/activity_services.dart';
+import 'package:nampa_hub/mid/token_manager.dart';
 import 'package:nampa_hub/pages/donation.dart';
 import 'package:nampa_hub/pages/edit_activities_page.dart';
 import 'package:nampa_hub/pages/payment_services_test.dart';
 import 'package:nampa_hub/src/activity.dart';
+import 'package:nampa_hub/src/config.dart';
 import 'package:nampa_hub/src/user.dart';
 import 'package:nampa_hub/src/widget.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:http/http.dart' as http;
 
 class ActivityDetailsPage extends StatefulWidget {
   final int activityId;
@@ -27,6 +31,49 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
   Map<int, bool> _attendanceChecked = {};
 
   double _rating = 0;
+  bool submitted = false;
+  Future<void> _submitRating(double rating) async {
+    try {
+      final token = await TokenManager.getToken();
+      if (token == null) {
+        print('User not authenticated');
+        return;
+      }
+
+      final response = await http.patch(
+        Uri.parse(updateuserrating),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'activity_id': widget.activityId,
+          'rating': rating,
+        }),
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        print("Rating submitted successfully");
+        setState(() {
+          _rating = rating;
+          submitted = true;
+        });
+      } else {
+        print("Failed to submit rating: ${response.statusCode}");
+        print("Response body: ${response.body}");
+      }
+    } catch (e) {
+      print("Error submitting rating: $e");
+      if (e is http.ClientException) {
+        print("Network error: ${e.message}");
+      } else if (e is FormatException) {
+        print("Error parsing response: ${e.message}");
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -50,14 +97,14 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
 
   void attendActivity(double attendFee) {
     if (attendFee != 0) {
-      // Navigator.push(context, MaterialPageRoute(
-      //   builder: (context) {
-      //     return PayPalPayment(
-      //       attendFee: attendFee,
-      //     );
-      //   },
-      // ));
-      ActivityService.attendActivity(context, widget.activityId);
+      Navigator.push(context, MaterialPageRoute(
+        builder: (context) {
+          return PayPalPayment(
+            attendFee: attendFee,
+          );
+        },
+      ));
+      // ActivityService.attendActivity(context, widget.activityId);
     } else {
       ActivityService.attendActivity(context, widget.activityId);
     }
@@ -285,118 +332,144 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
     );
   }
 
-  void showOwnerInformation(User user) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text(
-            'Activity Owner',
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-                  child: Container(
-                    height: 100,
-                    width: 100,
-                    color: Colors.red,
-                  ),
-                ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: Text(
-                    '${user.firstname} ${user.middlename} ${user.lastname}',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                ),
-                if (user.companyName.isNotEmpty) ...[
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: Text(
-                      'Company : ${user.lastname}',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ),
-                ],
-                if (user.instituteName.isNotEmpty) ...[
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: Text(
-                      'Institute : ${user.instituteName}',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ),
-                ],
-                const Divider(),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: Text(
-                    'Phone : ${user.phone}',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Email : ',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      Text(
-                        user.email,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      )
-                    ],
-                  ),
-                ),
-                const Divider(),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: Text(
-                    'Location : ${user.country}, ${user.city}',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: List.generate(
-                      5,
-                      (index) => IconButton(
-                        icon: Icon(
-                          index < _rating ? Icons.star : Icons.star_border,
-                          color: Colors.amber,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _rating = index + 1.toDouble();
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+  void showOwnerInformation(User user) { // Declare _rating to store user's rating
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text(
+              'Activity Owner',
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
-          ),
-        );
-      },
-    );
-  }
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 16),
+                    child: Container(
+                      height: 100,
+                      width: 100,
+                      color: Colors.red,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
+                    child: Text(
+                      '${user.firstname} ${user.middlename} ${user.lastname}',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                  ),
+                  if (user.companyName.isNotEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      child: Text(
+                        'Company : ${user.companyName}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ],
+                  if (user.instituteName.isNotEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      child: Text(
+                        'Institute : ${user.instituteName}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ],
+                  const Divider(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
+                    child: Text(
+                      'Phone : ${user.phone}',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Email : ',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        Text(
+                          user.email,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold),
+                        )
+                      ],
+                    ),
+                  ),
+                  const Divider(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
+                    child: Text(
+                      'Location : ${user.country}, ${user.city}',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        5,
+                        (index) => IconButton(
+                          icon: Icon(
+                            index < (_rating ?? 0)
+                                ? Icons.star
+                                : Icons.star_border,
+                            color: Colors.amber,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _rating = index + 1.toDouble();
+                            });
+                            print('Selected rating: $_rating');
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                       if(_rating != null){
+                          _submitRating(_rating);
+                          print('Successfully updated send ! :${_submitRating(_rating)}');
+                         Navigator.of(context).pop();
+                       }
+                      },
+                      child: Text('Submit'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+
 
   double calculatePercent(num? budget, num? maxDonation) {
     if (budget == null || maxDonation == null || maxDonation == 0) {
@@ -451,6 +524,7 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
                   children: [
                     screenWidth < 600
                         ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Container(
                                 width: double.infinity,
@@ -562,15 +636,39 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
                                   ),
                                 ],
                               ),
-                              AttendAndDonateButton(
-                                attendFunction: () => attendActivity(
-                                    activity.activitySupport?.attendFee ?? 0),
-                                donateFunction: donateActivity,
-                                attenFee:
-                                    activity.activitySupport?.attendFee ?? 0,
-                                isOutdated: isDateOutdated(
-                                    activity.activityDate!.endRegisDate!),
-                              )
+                              isOwner
+                                  ? Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: ElevatedButton(
+                                        onPressed: null,
+                                        style: ElevatedButton.styleFrom(
+                                          foregroundColor:
+                                              const Color(0xFF1797BF),
+                                          backgroundColor: const Color(
+                                              0xFF1B8900), // Ensure background color is white
+                                          padding: const EdgeInsets.all(18),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Start',
+                                          style: TextStyle(fontSize: 18),
+                                        ),
+                                      ),
+                                    )
+                                  : AttendAndDonateButton(
+                                      attendFunction: () => attendActivity(
+                                          activity.activitySupport?.attendFee ??
+                                              0),
+                                      donateFunction: donateActivity,
+                                      attenFee:
+                                          activity.activitySupport?.attendFee ??
+                                              0,
+                                      isOutdated: isDateOutdated(
+                                          activity.activityDate!.endRegisDate!),
+                                    )
                             ],
                           )
                         : Row(
@@ -703,6 +801,24 @@ class _ActivityDetailsPage extends State<ActivityDetailsPage> {
                     Text(
                       activity.activityLocation?.meetLocation ??
                           'Unknown location',
+                    ),
+                    const SizedBox(height: 40),
+                    const Text(
+                      'Start register day - Close register day',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      '${activity.activityDate!.startRegisDate.toString().split(' ')[0]} - ${activity.activityDate!.endRegisDate.toString().split(' ')[0]}',
+                    ),
+                    const SizedBox(height: 40),
+                    const Text(
+                      'Start event day - End event day',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      '${activity.activityDate!.startEventDate.toString().split(' ')[0]} - ${activity.activityDate!.endEventDate.toString().split(' ')[0]}',
                     ),
                     const SizedBox(height: 40),
                     const Divider(),
