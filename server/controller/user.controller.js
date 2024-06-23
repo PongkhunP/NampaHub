@@ -105,3 +105,14 @@ exports.validateEmail = async (req, res, next) => {
     next(error);
   }
 }
+
+exports.validateDeletion = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+
+    const isValid = await Userservice.validateDeleteUser(userId);
+    res.status(200).json({status: true, is_valid_payload : isValid});
+  } catch (error) {
+    next(error);
+  }
+}

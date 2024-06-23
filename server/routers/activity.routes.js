@@ -14,6 +14,7 @@ router.get("/activity-count", authenticateToken , ActivityController.getActivity
 router.get("/rating", authenticateToken , ActivityController.getRating, error);
 router.get("/attendee-list", authenticateToken , ActivityController.getAttendees , error);
 
+
 router.post(
   "/create-activity",
   authenticateToken,

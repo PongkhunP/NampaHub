@@ -13,4 +13,6 @@ router.get('/show-user', authenticateToken, UserController.show_user, error)
 router.delete('/delete-user', authenticateToken, UserController.delete_user, error)
 router.patch('/edit-user',authenticateToken,UserController.editUser, error);
 
+router.get('/validate-delete', authenticateToken ,UserController.validateDeletion, error);
+
 module.exports = router;

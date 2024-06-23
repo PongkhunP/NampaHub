@@ -148,7 +148,7 @@ class ActivityModel {
 
   //get basic activity information
   static async getActivityInfo(conn, condition = null, data_columns = ["*"]) {
-    const allowedConditions = ["activity_type", "organizer", "Id", "status"];
+    const allowedConditions = ["activity_type", "organizer", "Id", "status" , "user_id" , "rating"];
     const table = "activity";
 
     const queryBuilder = getFunctions(conn)
@@ -449,6 +449,21 @@ class ActivityModel {
 
       const query = `SELECT * FROM participation_list WHERE activity_id = ? AND user_id = ?`;
       const result = await conn.query(query , [activity_id, user_id]);
+
+      return result[0];
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async validateDeleteUser(activity_id, end_event_date)
+  {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+
+      const query = `SELECT * FROM activity_date WHERE activity_id = ? AND  end_event_date = ?` ;
+      const result = await conn.query(query , [activity_id, end_event_date]);
 
       return result[0];
     } catch (error) {
