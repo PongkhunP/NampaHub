@@ -28,7 +28,7 @@ class ActivityService {
         activityData.contact_email || user_email,
         activityData.organizer || user_email,
         activityData.status || "On-going",
-        // activityData.rating || 0,
+        activityData.rating || 0,
         user_id,
         conn
       );
@@ -509,7 +509,37 @@ class ActivityService {
     return await ActivityModel.validateAttendee(acitivity_id, user_id);
   }
 
- 
+  static async editActivities(activityDetail, activity_id) {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+      conn.beginTransaction();
+      await ActivityModel.updateActivity(
+        activityDetail.title,
+        activityDetail.description,
+        activity_id,
+        conn
+      );
+      await ActivityModel.updateActivityLocation(
+        activityDetail.event_location,
+        activityDetail.meet_location,
+        activity_id,
+        conn
+      );
+
+      await ActivityModel.updateActivitySupport(
+        activityDetail.max_donation,
+        activityDetail.participants,
+        activityDetail.attend_fee,
+        activity_id,
+        conn
+      );
+      await conn.commit();
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 module.exports = ActivityService;

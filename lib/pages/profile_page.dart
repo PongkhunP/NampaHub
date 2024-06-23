@@ -61,36 +61,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
       throw Exception('Failed to load user');
     }
   }
-
-  // Future<void> validateDeleteUser() async {
-  //   try {
-  //     final String? token = await TokenManager.getToken();
-  //     if (token == null) {
-  //       throw Exception('Token not found');
-  //     }
-  //     if (mounted) {
-  //       await logout(context);
-  //     }
-  //     final response = await http.delete(
-  //       Uri.parse(validatedeleteuser),
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Authorization': 'Bearer $token',
-  //       },
-  //     );
-
-  //     setState(() {});
-
-  //     if (response.statusCode == 200) {
-  //       print("Delete user successfully");
-  //     } else {
-  //       throw Exception('Failed to delete user');
-  //     }
-  //   } catch (e) {
-  //     throw e;
-  //   }
-  // }
-
+  
     Future<void> validateDeleteUser() async {
     try {
       final String? token = await TokenManager.getToken();

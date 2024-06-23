@@ -110,6 +110,15 @@ exports.getActivityCount = async (req, res, next) => {
 
 exports.editActivity = async (req, res, next) => {
   try {
+    const activity_id = req.params.activity_id; 
+    const activityDetail = JSON.parse(req.body.activityData); 
+    const result = await ActivityService.editActivities(activityDetail, activity_id);
+
+    if (result) {
+      res.json({ status: true, success: "Activity updated successfully" });
+    } else {
+      res.status(404).json({ status: false, message: "Activity not found" });
+    }
   } catch (error) {
     next(error);
   }
@@ -174,5 +183,4 @@ exports.checkIn = async (req, res, next) => {
     next(error);
   }
 };
-
 
