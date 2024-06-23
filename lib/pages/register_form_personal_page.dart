@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nampa_hub/pages/register_location_page.dart';
+import 'package:nampa_hub/pages/register_profile_upload.dart';
 import 'package:nampa_hub/src/user.dart';
 import 'package:nampa_hub/src/widget.dart';
 
@@ -29,7 +30,7 @@ class _MyRegisterPersonalInfoState extends State<MyRegisterPersonalInfo> {
       widget.user.printDetails();
       Navigator.push(context, MaterialPageRoute(
         builder: (context) {
-          return MyRegisterLocation(
+          return MyProfileImages(
             user: widget.user,
           );
         },
