@@ -251,4 +251,6 @@ class ActivityService {
       throw Exception('Failed to get Attendees with error : $e');
     }
   }
+
+  static submitRating(int id, double rating) {}
 }

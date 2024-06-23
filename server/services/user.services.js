@@ -199,6 +199,38 @@ class UserService {
     return jwt.sign(tokenData, secreteKey, { expiresIn: jwt_expired });
   }
 
+  static async updateUserRating( rating, activity_id) {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+      
+      const userId = await ActivityModel.getActivityInfo(conn,
+        {field: 'Id', operator: '=', value:activity_id},
+        ['user_id']
+      );
+      console.log(userId[0].user_id);
+      console.log(activity_id);
+      console.log(rating)
+      const result = await UserModel.updateUserRating(
+        userId[0].user_id,
+        rating,
+        conn
+      );
+
+      if (!result || result.affectedRows === 0) {
+        throw new Error("User not found or rating not updated.");
+      }
+
+      return { success: true, message: "User Rating updated successfully" };
+    } catch (error) {
+      throw error;
+    } finally {
+      if(conn){
+        conn.release();
+      }
+    }
+  }
+
   static async validateDeleteUser(user_id) {
     let conn;
     try {

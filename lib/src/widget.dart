@@ -399,11 +399,11 @@ class _RatingButtonState extends State<RatingButton> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text('Rate this activity'),
+              title: const Text('Rate this activity'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Tap a star to rate:'),
+                 const Text('Tap a star to rate:'),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
@@ -430,7 +430,7 @@ class _RatingButtonState extends State<RatingButton> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('Close'),
+                  child:const  Text('Close'),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -439,7 +439,7 @@ class _RatingButtonState extends State<RatingButton> {
                       Navigator.of(context).pop();
                     }
                   },
-                  child: Text('Submit'),
+                  child: const Text('Submit'),
                 ),
               ],
             );

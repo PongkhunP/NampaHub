@@ -381,6 +381,8 @@ class ActivityModel {
     }
   }
 
+
+
   static async getActivityRating(activity_id, conn) {
     try {
       const query = "SELECT rating from activity WHERE Id = ?";
@@ -484,5 +486,6 @@ class ActivityModel {
   }
 
 }
+
 
 module.exports = ActivityModel;
