@@ -12,6 +12,7 @@ router.get("/activity-details", authenticateToken, ActivityController.getActivit
 router.get("/history" , authenticateToken , ActivityController.getHistory, error);
 router.get("/activity-count", authenticateToken , ActivityController.getActivityCount, error);
 router.get("/rating", authenticateToken , ActivityController.getRating, error);
+router.get("/attendee-list", authenticateToken , ActivityController.getAttendees , error);
 
 router.post(
   "/create-activity",
@@ -23,10 +24,10 @@ router.post(
   ActivityController.createActivity,
   error
 );
+router.post("/attend", authenticateToken, ActivityController.updateAttend,error);
 
 router.patch("/edit-activity" , authenticateToken , ActivityController.editActivity, error);
-
-// New route for updating activity rating
+router.patch("/check-in" , authenticateToken , ActivityController.checkIn, error);
 router.patch("/update-rating", authenticateToken, ActivityController.updateRating, error);
 
 module.exports = router;

@@ -100,7 +100,7 @@ class UserModel {
   static async showUserAccount(user_id, conn) {
     try {
       const query =
-        "Select email , rating , password from user_account where Id = ?";
+        "Select Id, email , rating , password from user_account where Id = ?";
       const result = await conn.query(query, [user_id]);
       return result;
     } catch (error) {

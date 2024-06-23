@@ -1,4 +1,5 @@
 const ActivityModel = require("../models/activity.model");
+const UserService = require("../services/user.services");
 const pool = require("../configuration/db");
 
 class ActivityService {
@@ -114,40 +115,71 @@ class ActivityService {
     try {
       conn = await pool.getConnection();
       await conn.beginTransaction();
-
+  
       if (activity_type != "Forest" && activity_type != "Marine") {
         activity_type = "Other";
       }
-
-      const activities = await ActivityModel.getActivityInfo(conn, {
-        field: "activity_type",
-        operator: "=",
-        value: activity_type,
-      });
-
+  
+      const activities = await ActivityModel.getActivityInfo(conn, [
+        {
+          field: "activity_type",
+          operator: "=",
+          value: activity_type,
+        },
+        {
+          field: "status",
+          operator: "!=",
+          value: "Success",
+        },
+      ]);
+  
+      const currentDate = new Date();
+      console.log("Current Date:", currentDate);
+  
+      const filteredActivities = [];
+  
       for (const activity of activities) {
-        const location = await ActivityModel.getActivityLocation(
+
+        const dates = await ActivityModel.getActivityDate(
           conn,
           { field: "activity_id", operator: "=", value: activity.Id },
-          ["event_location"]
+          ["end_event_date"]
         );
-        if (location.length > 0) {
-          activity.event_location = location[0];
-        }
+  
+        if (dates.length > 0 && dates[0].end_event_date instanceof Date) {
+          const endEventDate = dates[0].end_event_date;
 
-        const media = await ActivityModel.getActivityMedia(
-          conn,
-          { field: "activity_id", operator: "=", value: activity.Id },
-          ["activity_image"]
-        );
-
-        if (media.length > 0) {
-          activity.activity_image = media[0].activity_image;
+          if (currentDate <= endEventDate) {
+            const location = await ActivityModel.getActivityLocation(
+              conn,
+              { field: "activity_id", operator: "=", value: activity.Id },
+              ["event_location"]
+            );
+            if (location.length > 0) {
+              activity.event_location = location[0];
+            }
+  
+            const media = await ActivityModel.getActivityMedia(
+              conn,
+              { field: "activity_id", operator: "=", value: activity.Id },
+              ["activity_image"]
+            );
+  
+            if (media.length > 0) {
+              activity.activity_image = media[0].activity_image;
+            }
+  
+            filteredActivities.push(activity);
+          } else {
+            console.log("Activity ended:", activity.Id);
+          }
+        } else {
+          console.log("No valid end event date found for activity:", activity.Id);
         }
       }
-
+  
       await conn.commit(); // Commit transaction
-      return activities;
+      return filteredActivities;
     } catch (error) {
       if (conn) {
         await conn.rollback(); // Rollback transaction on error
@@ -161,7 +193,7 @@ class ActivityService {
     }
   }
 
-  static async getHistoryActivity(status) {
+  static async getHistoryActivity(status, user_id) {
     let conn;
     try {
       conn = await pool.getConnection();
@@ -173,39 +205,55 @@ class ActivityService {
         value: status,
       });
 
+      const filteredActivities = [];
+
       for (const activity of activities) {
-        const location = await ActivityModel.getActivityLocation(
+        const participation = await ActivityModel.getParticipationList(
           conn,
           { field: "activity_id", operator: "=", value: activity.Id },
-          ["event_location"]
-        );
-        if (location.length > 0) {
-          activity.event_location = location[0];
-        }
-
-        const media = await ActivityModel.getActivityMedia(
-          conn,
-          { field: "activity_id", operator: "=", value: activity.Id },
-          ["activity_image"]
+          ["user_id"]
         );
 
-        if (media.length > 0) {
-          activity.activity_image = media[0].activity_image;
-        }
-
-        const support = await ActivityModel.getActivitySupport(
-          conn,
-          { field: "activity_id", operator: "=", value: activity.Id },
-          ["participants"]
+        const isUserParticipating = participation.some(
+          (record) => record.user_id === user_id
         );
 
-        if (support.length > 0) {
-          activity.participants = support[0].participants;
+        if (isUserParticipating) {
+          const location = await ActivityModel.getActivityLocation(
+            conn,
+            { field: "activity_id", operator: "=", value: activity.Id },
+            ["event_location"]
+          );
+          if (location.length > 0) {
+            activity.event_location = location[0];
+          }
+
+          const media = await ActivityModel.getActivityMedia(
+            conn,
+            { field: "activity_id", operator: "=", value: activity.Id },
+            ["activity_image"]
+          );
+
+          if (media.length > 0) {
+            activity.activity_image = media[0].activity_image;
+          }
+
+          const support = await ActivityModel.getActivitySupport(
+            conn,
+            { field: "activity_id", operator: "=", value: activity.Id },
+            ["participants"]
+          );
+
+          if (support.length > 0) {
+            activity.participants = support[0].participants;
+          }
+
+          filteredActivities.push(activity);
         }
       }
 
       await conn.commit(); // Commit transaction
-      return activities;
+      return filteredActivities;
     } catch (error) {
       if (conn) {
         await conn.rollback(); // Rollback transaction on error
@@ -227,6 +275,7 @@ class ActivityService {
       const activity_info = await ActivityModel.getActivityInfo(conn, null, [
         "status",
         "user_id",
+        "Id",
       ]);
 
       let counts = {
@@ -235,17 +284,36 @@ class ActivityService {
         Created: 0,
       };
 
-      activity_info.forEach((activity) => {
+      for (const activity of activity_info) {
         if (activity.user_id === user_id) {
           counts["Created"]++;
         }
 
-        if (activity.status === "On-going") {
-          counts["On-going"]++;
-        } else if (activity.status === "Success") {
-          counts["Success"]++;
+        // if (activity.status === "On-going") {
+        //   counts["On-going"]++;
+        // } else if (activity.status === "Success") {
+        //   counts["Success"]++;
+        // }
+
+        const participation = await ActivityModel.getParticipationList(
+          conn,
+          { field: "activity_id", operator: "=", value: activity.Id },
+          ["user_id"]
+        );
+
+        const isUserParticipating = participation.some(
+          (record) => record.user_id === user_id
+        );
+
+        if (isUserParticipating) {
+          // Increment count if user is participating
+          if (activity.status === "On-going") {
+            counts["On-going"]++;
+          } else if (activity.status === "Success") {
+            counts["Success"]++;
+          }
         }
-      });
+      }
 
       return counts;
     } catch (error) {
@@ -367,90 +435,15 @@ class ActivityService {
     }
   }
 
-  static async getSearchActivity(query) {}
-
-  static logObject(obj, indent = 0) {
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        const value = obj[key];
-        if (typeof value === "object" && value !== null) {
-          console.log(`${" ".repeat(indent)}${key}: `);
-          ActivityService.logObject(value, indent + 2); // Use ActivityService.logObject recursively
-        } else {
-          console.log(`${" ".repeat(indent)}${key}: ${value}`);
-        }
-      }
-    }
-  }
-
-  static async getHistory(status) {
-    let conn;
-    try {
-      conn = await pool.getConnection();
-      await conn.beginTransaction();
-
-      const activities = await ActivityModel.getActivityInfo(conn, {
-        field: "status",
-        operator: "=",
-        value: status,
-      });
-      console.log("status:" + status);
-      console.log("acitivity id: " + activities);
-
-      for (const activity of activities) {
-        const location = await ActivityModel.getActivityLocation(
-          conn,
-          { field: "activity_id", operator: "=", value: activity.Id },
-          ["event_location"]
-        );
-        if (location.length > 0) {
-          activity.event_location = location[0];
-        }
-
-        const media = await ActivityModel.getActivityMedia(
-          conn,
-          { field: "activity_id", operator: "=", value: activity.Id },
-          ["activity_image"]
-        );
-
-        if (media.length > 0) {
-          activity.activity_image = media[0].activity_image;
-        }
-        const support = await ActivityModel.getActivitySupport(
-          conn,
-          { field: "activity_id", operator: "=", value: activity.Id },
-          ["participants"]
-        );
-        if (support.length > 0) {
-          activity.participants = support[0].participants;
-        }
-      }
-
-      await conn.commit(); // Commit transaction
-      return activities;
-    } catch (error) {
-      if (conn) {
-        await conn.rollback(); // Rollback transaction on error
-      }
-      console.error("Error fetching activities:", error);
-      throw error;
-    } finally {
-      if (conn) {
-        await conn.release();
-      }
-    }
-  }
-  static async getRating( acitivity_id) {
+  static async getRating(acitivity_id) {
     let conn;
     try {
       conn = await pool.getConnection();
       const ratingData = await ActivityModel.getActivityRating(
         acitivity_id,
-        conn,
-      )
-      return ratingData[0].rating
-
-
+        conn
+      );
+      return ratingData[0].rating;
     } catch (error) {
       if (conn) {
         await conn.rollback(); // Rollback transaction on error
@@ -462,6 +455,58 @@ class ActivityService {
         await conn.release();
       }
     }
+  }
+
+  static async updateAttendance(activity_id, user_id) {
+    try {
+      const attendance = await ActivityModel.createActivityAttendance(
+        activity_id,
+        user_id
+      );
+      return attendance;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getAttendeeList(activity_id) {
+    try {
+      const attendees = await ActivityModel.getAttendees(activity_id);
+
+      const userInfoList = [];
+
+      for (const attendee of attendees) {
+        const user = await UserService.showUserInfo(attendee.user_id);
+        const userInfo = {
+          id: attendee.user_id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          phone: user.phone,
+          isParticipated: attendee.isParticipated === 1,
+        };
+        userInfoList.push(userInfo);
+      }
+
+      return userInfoList;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async updateAttend(activity_id, checkin_list) {
+    try {
+      const updateAttend = await ActivityModel.updateAttendance(
+        activity_id,
+        checkin_list
+      );
+      return updateAttend;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async valiateParticipants(acitivity_id, user_id) {
+    return await ActivityModel.validateAttendee(acitivity_id, user_id);
   }
 }
 

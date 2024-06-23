@@ -98,7 +98,7 @@ class UserService {
         ...user_work[0],
         ...user_location[0],
       };
-      // const userInfo = {user_account , user_personal , user_edu , user_work, user_location}
+    // const userInfo = {user_account , user_personal , user_edu , user_work, user_location}
       return userInfo;
     } catch (error) {
       throw error;

@@ -325,6 +325,29 @@ class ActivityModel {
     return result;
   }
 
+  //get participation_list table information
+  static async getParticipationList(conn, condition = null, data_columns = ["*"]) {
+    const allowedConditions = [
+      "Id",
+      "isParticipated",
+      "activity_id",
+      "user_id",
+    ];
+    const table = "participation_list";
+
+    const queryBuilder = getFunctions(conn)
+      .table(table)
+      .allow(allowedConditions)
+      .select(data_columns);
+
+    if (condition) {
+      queryBuilder.where(condition);
+    }
+
+    const result = await queryBuilder.execute();
+    return result;
+  }
+
   static async getActivityOfUser(user_id, conn) {
     try {
       const query = "SELECT Id FROM activity WHERE user_id = ?";
@@ -350,6 +373,84 @@ class ActivityModel {
       const query = "SELECT rating from activity WHERE Id = ?";
       const result = await conn.query(query, [activity_id]);
       return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async createActivityAttendance(acitivity_id, user_id)
+  {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+      const query = `INSERT INTO participation_list (isParticipated, activity_id, user_id) VALUES (? , ? , ?)`;
+      const result = await conn.query(query , [false, acitivity_id, user_id]);
+      
+      return result;
+    } catch (error) {
+      throw error;
+    } finally {
+      if(conn)
+        {
+          conn.release();
+        }
+    }
+  }
+
+  static async getAttendees(activity_id)
+  {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+      const query = `SELECT user_id , isParticipated FROM participation_list WHERE activity_id = ?`;
+      const result = await conn.query(query , [activity_id]);
+
+      return result;
+    } catch (error) {
+      throw error;
+    } finally {
+      if(conn)
+        {
+          conn.release();
+        }
+    }
+  }
+
+  static async updateAttendance(activity_id , checkin_list)
+  {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+      const updates = Object.entries(checkin_list).map(([user_id, isParticipated]) => {
+        const query = `
+          UPDATE participation_list 
+          SET isParticipated = ? 
+          WHERE activity_id = ? AND user_id = ?
+        `;
+        return conn.query(query, [isParticipated, activity_id, parseInt(user_id, 10)]);
+      });
+
+      await Promise.all(updates);
+      return { message: 'Update successful' };
+    } catch (error) {
+      throw error;
+    } finally {
+      if (conn) {
+        conn.release();
+      }
+    }
+  }
+
+  static async validateAttendee(activity_id , user_id)
+  {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+
+      const query = `SELECT * FROM participation_list WHERE activity_id = ? AND user_id = ?`;
+      const result = await conn.query(query , [activity_id, user_id]);
+
+      return result[0];
     } catch (error) {
       throw error;
     }
