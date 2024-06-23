@@ -62,33 +62,106 @@ class _MyProfilePageState extends State<MyProfilePage> {
     }
   }
 
-  Future<void> deleteUser() async {
+  // Future<void> validateDeleteUser() async {
+  //   try {
+  //     final String? token = await TokenManager.getToken();
+  //     if (token == null) {
+  //       throw Exception('Token not found');
+  //     }
+  //     if (mounted) {
+  //       await logout(context);
+  //     }
+  //     final response = await http.delete(
+  //       Uri.parse(validatedeleteuser),
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Authorization': 'Bearer $token',
+  //       },
+  //     );
+
+  //     setState(() {});
+
+  //     if (response.statusCode == 200) {
+  //       print("Delete user successfully");
+  //     } else {
+  //       throw Exception('Failed to delete user');
+  //     }
+  //   } catch (e) {
+  //     throw e;
+  //   }
+  // }
+
+    Future<void> validateDeleteUser() async {
     try {
       final String? token = await TokenManager.getToken();
       if (token == null) {
         throw Exception('Token not found');
       }
-      if (mounted) {
-        await logout(context);
-      }
-      final response = await http.delete(
-        Uri.parse(deleteuser),
+
+      final response = await http.get(
+        Uri.parse(validatedeleteuser),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
+       
       );
 
-      setState(() {});
-
       if (response.statusCode == 200) {
-        print("Delete user successfully");
+        final responseBody = jsonDecode(response.body);
+        if (responseBody['is_valid_payload']) {
+          final deleteResponse = await http.delete(
+            Uri.parse(deleteuser),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          );
+
+          if (deleteResponse.statusCode == 200) {
+            print("Delete user successfully");
+            if (mounted) {
+              await logout(context);
+            }
+          } else {
+            throw Exception('Failed to delete user');
+          }
+        } else {
+          throw Exception('Cannot delete account due to active activities');
+        }
       } else {
-        throw Exception('Failed to delete user');
+        throw Exception('Failed to validate user deletion');
       }
     } catch (e) {
       throw e;
     }
+  }
+
+   void confirmDeleteUser() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Account'),
+          content: const Text('Accomplish your activity before you delete the account '),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                validateDeleteUser(); // Call the delete user function
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -341,7 +414,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                             'Delete account',
                             style: TextStyle(color: Colors.red),
                           ),
-                          onTap: deleteUser,
+                          onTap: confirmDeleteUser,
                         ),
                       ],
                     ),
