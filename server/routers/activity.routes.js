@@ -30,5 +30,6 @@ router.post("/attend", authenticateToken, ActivityController.updateAttend,error)
 router.patch("/edit-activity" , authenticateToken , ActivityController.editActivity, error);
 router.patch("/check-in" , authenticateToken , ActivityController.checkIn, error);
 router.patch("/update-rating", authenticateToken, ActivityController.updateRating, error);
+router.patch("/update-activity", authenticateToken, ActivityController.editActivity, error);
 
 module.exports = router;
