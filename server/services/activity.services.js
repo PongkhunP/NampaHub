@@ -508,6 +508,8 @@ class ActivityService {
   static async valiateParticipants(acitivity_id, user_id) {
     return await ActivityModel.validateAttendee(acitivity_id, user_id);
   }
+
+ 
 }
 
 module.exports = ActivityService;

@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const UserModel = require("../models/user.model");
 const ActivityModel = require("../models/activity.model");
 const pool = require("../configuration/db");
+const { fields } = require("../configuration/upload");
 
 class UserService {
   static async registerUser(userDetails) {
@@ -68,12 +69,11 @@ class UserService {
       }
 
       await conn.commit();
-      return { insertId: userId, ...user_account};
+      return { insertId: userId, ...user_account };
     } catch (err) {
       throw error;
     } finally {
-      if(conn)
-      {
+      if (conn) {
         await conn.release();
       }
     }
@@ -98,22 +98,20 @@ class UserService {
         ...user_work[0],
         ...user_location[0],
       };
-    // const userInfo = {user_account , user_personal , user_edu , user_work, user_location}
+      // const userInfo = {user_account , user_personal , user_edu , user_work, user_location}
       return userInfo;
     } catch (error) {
       throw error;
     } finally {
-      if(conn)
-        {
-          await conn.release();
-        }
+      if (conn) {
+        await conn.release();
+      }
     }
   }
 
-  static async EditUser(userDetails, user_Id){
+  static async EditUser(userDetails, user_Id) {
     let conn;
     try {
-
       conn = await pool.getConnection();
       conn.beginTransaction();
 
@@ -151,39 +149,38 @@ class UserService {
     } catch (error) {
       throw error;
     } finally {
-      if(conn)
-        {
-          await conn.release();
-        }
+      if (conn) {
+        await conn.release();
+      }
     }
   }
 
-  static async deleteUserAccount(user_id)
-  {
-    let conn; 
+  static async deleteUserAccount(user_id) {
+    let conn;
     try {
       conn = await pool.getConnection();
       await conn.beginTransaction;
 
       const activity_ids = await ActivityModel.getActivityOfUser(user_id, conn);
       console.log("Activity ids : " + activity_ids);
-      
-      for(const activity_id in activity_ids)
-      {
+
+      for (const activity_id in activity_ids) {
         console.log("Activity ids : " + activity_id);
         await UserModel.deleteActivityData(activity_id, conn);
       }
-      const delete_user = await UserModel.deleteAllUserRelatedData(user_id, conn);
+      const delete_user = await UserModel.deleteAllUserRelatedData(
+        user_id,
+        conn
+      );
 
       await conn.commit();
       return true;
     } catch (error) {
       throw error;
     } finally {
-      if(conn)
-        {
-          await conn.release();
-        }
+      if (conn) {
+        await conn.release();
+      }
     }
   }
 
@@ -234,6 +231,48 @@ class UserService {
     }
   }
 
+  static async validateDeleteUser(user_id) {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+      await conn.beginTransaction();
+
+      const activitys = await ActivityModel.getActivityInfo(
+        conn,
+        { field: "user_id", oprator: "=", value: user_id },
+      
+      );
+
+      const currentDate = new Date();
+      let isAbleToDeleteAcc = true;
+
+      for (const activity of activitys) {
+        const dates = await ActivityModel.getActivityDate(
+          conn,
+          { field: "activity_id", operator: "=", value: activity.Id },
+          ["end_event_date"]
+        );
+
+        if (dates.length > 0 && dates[0].end_event_date instanceof Date) {
+          const endEventDate = dates[0].end_event_date;
+          if (currentDate <= endEventDate) {
+            isAbleToDeleteAcc = false;
+          }
+        }
+      }
+
+      await conn.commit();
+
+      
+      return isAbleToDeleteAcc;
+    } catch (error) {
+      throw error;
+    } finally {
+      if (conn) {
+        await conn.release();
+      }
+    }
+  }
 }
 
 module.exports = UserService;

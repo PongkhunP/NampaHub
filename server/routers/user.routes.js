@@ -15,4 +15,6 @@ router.patch('/edit-user',authenticateToken,UserController.editUser, error);
 router.patch("/updateuser-rating", authenticateToken, UserController.updateUserRating, error);
 
 
+router.get('/validate-delete', authenticateToken ,UserController.validateDeletion, error);
+
 module.exports = router;
