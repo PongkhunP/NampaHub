@@ -381,8 +381,6 @@ class ActivityModel {
     }
   }
 
-
-
   static async getActivityRating(activity_id, conn) {
     try {
       const query = "SELECT rating from activity WHERE Id = ?";
@@ -393,20 +391,23 @@ class ActivityModel {
     }
   }
 
-  static async createActivityAttendance(acitivity_id, user_id) {
-    let conn;
+  static async createActivityAttendance(
+    acitivity_id,
+    user_id,
+    isParticipated,
+    conn
+  ) {
     try {
-      conn = await pool.getConnection();
       const query = `INSERT INTO participation_list (isParticipated, activity_id, user_id) VALUES (? , ? , ?)`;
-      const result = await conn.query(query, [false, acitivity_id, user_id]);
+      const result = await conn.query(query, [
+        isParticipated,
+        acitivity_id,
+        user_id,
+      ]);
 
       return result;
     } catch (error) {
       throw error;
-    } finally {
-      if (conn) {
-        conn.release();
-      }
     }
   }
 
@@ -485,7 +486,203 @@ class ActivityModel {
     }
   }
 
-}
+  static async deleteReward(reward_id) {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+      const query = `DELETE FROM reward WHERE Id = ?`;
 
+      const result = await conn.query(query, [reward_id]);
+      return result;
+    } catch (error) {
+      throw error;
+    } finally {
+      if (conn) {
+        conn.release();
+      }
+    }
+  }
+
+  static async deleteExpense(expense_id) {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+      const query = `DELETE FROM expense WHERE Id = ?`;
+
+      const result = await conn.query(query, [expense_id]);
+      return result;
+    } catch (error) {
+      throw error;
+    } finally {
+      if (conn) {
+        conn.release();
+      }
+    }
+  }
+
+  static async editActivityInfo(
+    id,
+    title,
+    description,
+    goals,
+    activity_type,
+    contact_email,
+    organizer,
+    status,
+    rating,
+    conn
+  ) {
+    try {
+      const query = `UPDATE activity 
+                      SET title = ?, description = ?, goals = ?, activity_type = ?, contact_email = ?,
+                       organizer = ?, status = ?, rating = ? 
+                      WHERE Id = ?`;
+      const result = await conn.query(query, [
+        title,
+        description,
+        goals,
+        activity_type,
+        contact_email,
+        organizer,
+        status,
+        rating,
+        id,
+      ]);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async editActivityDate(
+    activity_id,
+    start_regis_date,
+    end_regis_date,
+    start_event_date,
+    end_event_date,
+    conn
+  ) {
+    const formatDateTime = (datetime) => {
+      return datetime.split(".")[0].replace("T", " ");
+    };
+
+    const formattedStartRegisDate = formatDateTime(start_regis_date);
+    const formattedEndRegisDate = formatDateTime(end_regis_date);
+    const formattedStartEventDate = formatDateTime(start_event_date);
+    const formattedEndEventDate = formatDateTime(end_event_date);
+
+    try {
+      const query = `UPDATE activity_date 
+                      SET start_regis_date = ?, end_regis_date = ?, start_event_date = ?, end_event_date = ? 
+                      WHERE activity_id = ?`;
+      const result = await conn.query(query, [formattedStartRegisDate, formattedEndRegisDate, formattedStartEventDate, formattedEndEventDate, activity_id]);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async editActivityLocation(
+    activity_id,
+    event_location,
+    meet_location,
+    conn
+  ) {
+    try {
+      const query = `UPDATE activity_location 
+                      SET event_location = ?, meet_location = ? 
+                      WHERE activity_id = ?`;
+      const result = await conn.query(query, [
+        event_location,
+        meet_location,
+        activity_id,
+      ]);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async editActivityMedia(activity_id, activity_image, conn) {
+    try {
+      const query = `UPDATE activity_media
+                      SET activity_image = ?  
+                      WHERE activity_id = ?`;
+      const result = await conn.query(query, [activity_image, activity_id]);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async editActivitySupport(
+    activity_id,
+    max_donation,
+    participants,
+    attend_fee,
+    budget,
+    current_participants,
+    conn
+  ) {
+    try {
+      const query = `UPDATE activity_support
+                      SET max_donation = ?, participants = ?, attend_fee = ?, budget = ?, current_participants = ? 
+                      WHERE activity_id = ?`;
+      const result = await conn.query(query, [
+        max_donation,
+        participants,
+        attend_fee,
+        budget,
+        current_participants,
+        activity_id,
+      ]);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async editActivityExpense(id, name, expense, actvity_id,conn) {
+    try {
+      let query;
+      if (id) {
+        query = `UPDATE expense
+                        SET name = ?, expense = ? 
+                        WHERE Id = ?`;
+      } else {
+        query = `INSERT INTO expense (name, expense, activity_id)
+                 VALUES (?, ?, ?)`;
+      }
+
+      const params = id ? [name, expense, id] : [name, expense, actvity_id];
+      const result = await conn.query(query, params);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async editActivityReward(id, name, reward_image, description, acitivity_id, conn) {
+    try {
+      let query;
+      if (id) {
+        query = `UPDATE reward
+                      SET name = ?, reward_image = ?, description = ? 
+                      WHERE Id = ?`;
+      } else {
+        query = `INSERT INTO reward (name, reward_image, description, activity_id)
+                 VALUES (?, ?, ?, ?)`;
+      }
+
+      const params = id
+        ? [name, reward_image, description, id]
+        : [name, reward_image, description, acitivity_id];
+      const result = await conn.query(query, params);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+}
 
 module.exports = ActivityModel;

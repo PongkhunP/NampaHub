@@ -3,13 +3,14 @@ const Userservice = require("../services/user.services");
 
 exports.register = async (req, res, next) => {
   try {
-    const userDetails = req.body;
+    const userDetails = JSON.parse(req.body.userDetails);
     console.log("user-detail :" + userDetails)
     if (!userDetails.password) {
       console.error("Password is missing in request body"); // Log missing password error
     }
+    const userImage = req.file ? req.file : null;
 
-    const userAccount = await Userservice.registerUser(userDetails);
+    const userAccount = await Userservice.registerUser(userDetails, userImage);
     const userId = userAccount.insertId;
 
     let tokenData = { _id: userId.toString(), email: userDetails.email };
@@ -83,14 +84,12 @@ exports.delete_user = async (req, res, next) => {
 
 exports.editUser = async (req, res, next) => {
   try {
-    const userDetails = req.body;
+    const userDetails = JSON.parse(req.body.userDetails);
     const user_id = req.user._id;
-    const user_email = req.user.email;
 
-    console.log("User id: " + user_id);
-    console.log("User email: " + user_email);
+    let profileImage = req.file;
 
-    const user_update = await Userservice.EditUser(userDetails, user_id);
+    const user_update = await Userservice.EditUser(userDetails, profileImage, user_id);
     res.status(200).json({ status: true, success: "Edit user successfully" });
   } catch (error) {
     next(error);
@@ -109,34 +108,6 @@ exports.validateEmail = async (req, res, next) => {
   }
 };
 
-exports.updateUserRating = async (req, res, next) => {
-  try {
-    const activity_id = req.body.activity_id;
-    const rating = req.body.rating;
-    // Validate input
-    if (!activity_id || !rating) {
-      return res.status(400).json({
-        success: false,
-        message: "User ID and rating are required",
-      });
-    }
-
-    // Convert rating to number if it's a string
-    const numericRating = parseFloat(rating);
-
-    // Call the service method to update the rating
-    const result = await Userservice.updateUserRating(
-      numericRating,
-      activity_id
-    );
-
-    res.status(200).json({status: true, success:result});
-  } catch (error) {
-    next(error);
-  }
-};
-
-
 exports.validateDeletion = async (req, res, next) => {
   try {
     const userId = req.user._id;
@@ -147,3 +118,30 @@ exports.validateDeletion = async (req, res, next) => {
     next(error);
   }
 }
+
+exports.updateUserRating = async (req, res, next) => {
+  try {
+    const activity_id = req.body.activity_id;
+    const rating = req.body.rating;
+
+    if (!activity_id || !rating) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "User ID and rating are required",
+        });
+    }
+
+    const numericRating = parseFloat(rating);
+
+    const result = await Userservice.updateUserRating(
+      numericRating,
+      activity_id
+    );
+
+    res.status(200).json({status: true, success: result});
+  } catch (error) {
+    next(error);
+  }
+};

@@ -83,6 +83,17 @@ class UserModel {
     }
   }
 
+  static async createUserMedia(user_image, user_id, conn) {
+    try {
+      const query =
+        "INSERT INTO user_media (user_image, user_id) VALUES (?, ?)";
+      const result = await conn.query(query, [user_image, user_id]);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async checkUser(email) {
     let conn;
     try {
@@ -172,6 +183,26 @@ class UserModel {
     }
   }
 
+  static async showUserMedia(user_id , conn) 
+  {
+    try {
+      const query = `SELECT user_image from user_media WHERE user_id = ?`;
+      const result = await conn.query(query , [user_id]);
+
+      result.forEach((media) => {
+        if(media.user_image){
+          media.user_image = Buffer.from(media.user_image).toString(
+            'base64'
+          );
+        }
+      });
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async updateUserAccount(user_email, user_password, user_id, conn) {
     try {
       const query = `INSERT INTO user_account (email, password, Id) VALUES (?, ?, ?)
@@ -239,7 +270,40 @@ class UserModel {
     }
   }
 
-  static async updateUserPersonal(first_name, last_name, middle_name, user_id, age, phone, conn) {
+  static async updateUserMediaData(user_image, user_id, conn) {
+    try {
+      const query = `INSERT INTO user_media (user_image, user_id) VALUES (?, ?)
+                     ON DUPLICATE KEY UPDATE 
+                       user_image = VALUES(user_image);`;
+      const result = await conn.query(query, [user_image, user_id]);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async updateUserLocation(country, city, user_id, conn) {
+    try {
+      const query = `INSERT INTO user_location (country, city, user_id) VALUES (?, ?, ?)
+                    ON DUPLICATE KEY UPDATE 
+                      country = VALUES(country),
+                      city = VALUES(city);`;
+      const result = await conn.query(query, [country, city, user_id]);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async updateUserPersonal(
+    first_name,
+    last_name,
+    middle_name,
+    user_id,
+    age,
+    phone,
+    conn
+  ) {
     try {
       const query = `INSERT INTO user_personal_data (user_id, first_name, last_name, middle_name, age, phone) VALUES (?, ?, ?, ?, ?, ?)
                      ON DUPLICATE KEY UPDATE 
@@ -248,18 +312,31 @@ class UserModel {
                        middle_name = VALUES(middle_name),
                        age = VALUES(age),
                        phone = VALUES(phone);`;
-  
+
       // Log query and parameters for debugging
-      console.log('Query:', query);
-      console.log('Parameters:', [first_name, last_name, middle_name, user_id, age, phone]);
-  
-      const result = await conn.query(query, [user_id, first_name, last_name, middle_name, age, phone]);
+      console.log("Query:", query);
+      console.log("Parameters:", [
+        first_name,
+        last_name,
+        middle_name,
+        user_id,
+        age,
+        phone,
+      ]);
+
+      const result = await conn.query(query, [
+        user_id,
+        first_name,
+        last_name,
+        middle_name,
+        age,
+        phone,
+      ]);
       return result;
     } catch (error) {
       throw error;
     }
   }
-  
 
   static async deleteActivityData(activity_id, conn) {
     try {
@@ -293,6 +370,7 @@ class UserModel {
       }
 
       const deleteQueries = [
+        "DELETE FROM user_media WHERE user_id = ?",
         "DELETE FROM user_location WHERE user_id = ?",
         "DELETE FROM user_education_data WHERE user_id = ?",
         "DELETE FROM user_personal_data WHERE user_id = ?",
@@ -330,8 +408,9 @@ class UserModel {
 
   static async updateUserRating(Id, rating, conn) {
     try {
-      const query = "UPDATE user_account SET rating = ? WHERE Id = ?";
+      const query = `UPDATE user_account SET rating = ? WHERE Id = ?`;
       const result = await conn.query(query, [rating, Id]);
+
       return result;
     } catch (error) {
       throw error;

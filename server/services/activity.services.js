@@ -99,8 +99,120 @@ class ActivityService {
         }
       }
 
+      console.log("Initialize participation list for activity...");
+      const participated = true;
+      await ActivityModel.createActivityAttendance(activity_id, user_id, participated, conn);
+
       await conn.commit();
       return { success: true, activity_id };
+    } catch (error) {
+      console.error("Error creating activity:", error);
+      await conn.rollback();
+      throw error;
+    } finally {
+      conn.release();
+    }
+  }
+
+  static async editActivity(
+    activityData,
+    activityImage,
+    rewardImages
+  ) {
+    const conn = await pool.getConnection();
+
+    try {
+      await conn.beginTransaction();
+
+      console.log("Updating activity info...");
+      const goals = activityData.goals
+        ? JSON.stringify(activityData.goals)
+        : "[]";
+
+      const activityInfo = await ActivityModel.editActivityInfo(
+        activityData.id,
+        activityData.title,
+        activityData.description,
+        goals,
+        activityData.activity_type,
+        activityData.contact_email,
+        activityData.organizer,
+        activityData.status,
+        activityData.rating,
+        conn
+      );
+
+      console.log("Updating activity location...");
+      await ActivityModel.editActivityLocation(
+        activityData.id,
+        activityData.activity_location.event_location,
+        activityData.activity_location.meet_location,
+        conn
+      );
+
+      console.log("Updating activity date...");
+      await ActivityModel.editActivityDate(
+        activityData.id,
+        activityData.activity_date.start_regis_date,
+        activityData.activity_date.end_regis_date,
+        activityData.activity_date.start_event_date,
+        activityData.activity_date.end_event_date,
+        conn
+      );
+
+      console.log("Updating activity support...");
+      await ActivityModel.editActivitySupport(
+        activityData.id,
+        activityData.activity_support.max_donation,
+        activityData.activity_support.participants,
+        activityData.activity_support.attend_fee,
+        activityData.activity_support.budget,
+        activityData.activity_support.current_participants,
+        conn
+      );
+
+      console.log("Updating activity expenses...");
+      for (const expense of activityData.expenses) {
+        await ActivityModel.editActivityExpense(
+          expense.id,
+          expense.name,
+          expense.expense,
+          activityData.id,
+          conn
+        );
+      }
+
+      console.log("Activity Image : "+ activityImage); 
+
+      if (activityImage) {
+        console.log("Updating activity media...");
+        await ActivityModel.editActivityMedia(
+          activityData.id,
+          activityImage.buffer,
+          conn
+        );
+      }
+
+      console.log("reward images : " + rewardImages);
+
+      for (const rewardImage of rewardImages) {
+        const rewardData = activityData.rewards.find(
+          (reward) => reward.name === rewardImage.originalname
+        );
+        if (rewardData) {
+          await ActivityModel.editActivityReward(
+            rewardData.id,
+            rewardData.name,
+            rewardImage.buffer,
+            rewardData.description,
+            activityData.id,
+            conn
+          );
+        }
+      }
+
+      await conn.commit();
+      return { success : true};
     } catch (error) {
       console.error("Error creating activity:", error);
       await conn.rollback();
@@ -267,6 +379,69 @@ class ActivityService {
     }
   }
 
+  static async getOwnHistory(user_id)
+  {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+      await conn.beginTransaction();
+
+      const activities = await ActivityModel.getActivityInfo(conn, {
+        field: "user_id",
+        operator: "=",
+        value: user_id,
+      }); 
+
+      const filteredActivities = [];
+
+      for (const activity of activities) {
+          const location = await ActivityModel.getActivityLocation(
+            conn,
+            { field: "activity_id", operator: "=", value: activity.Id },
+            ["event_location"]
+          );
+          if (location.length > 0) {
+            activity.event_location = location[0];
+          }
+
+          const media = await ActivityModel.getActivityMedia(
+            conn,
+            { field: "activity_id", operator: "=", value: activity.Id },
+            ["activity_image"]
+          );
+
+          if (media.length > 0) {
+            activity.activity_image = media[0].activity_image;
+          }
+
+          const support = await ActivityModel.getActivitySupport(
+            conn,
+            { field: "activity_id", operator: "=", value: activity.Id },
+            ["participants"]
+          );
+
+          if (support.length > 0) {
+            activity.participants = support[0].participants;
+          }
+
+          filteredActivities.push(activity);
+        
+      }
+
+      return filteredActivities;
+    } catch (error) {
+      if (conn) {
+        await conn.rollback(); // Rollback transaction on error
+      }
+      console.error("Error fetching activities:", error);
+      throw error;
+    } finally {
+      if (conn) {
+        await conn.release();
+      }
+    }
+  }
+
   static async getActivityCount(user_id) {
     let conn;
     try {
@@ -400,13 +575,13 @@ class ActivityService {
       const activity_reward = await ActivityModel.getActivityReward(
         conn,
         { field: "activity_id", operator: "=", value: activity_id },
-        ["name", "reward_image", "description"]
+        ["Id","name", "reward_image", "description"]
       );
 
       const activity_expense = await ActivityModel.getActivityExpense(
         conn,
         { field: "activity_id", operator: "=", value: activity_id },
-        ["name", "expense"]
+        ["Id","name", "expense"]
       );
 
       await conn.commit(); // Commit transaction
@@ -457,15 +632,25 @@ class ActivityService {
     }
   }
 
-  static async updateAttendance(activity_id, user_id) {
+  static async createAttendance(activity_id, user_id) {
+    let conn;
     try {
+      conn = await pool.getConnection();
+      const participated = false;
       const attendance = await ActivityModel.createActivityAttendance(
         activity_id,
-        user_id
+        user_id,
+        participated,
+        conn,
       );
       return attendance;
     } catch (error) {
       throw error;
+    } finally {
+      if(conn)
+      {
+        conn.release();
+      }
     }
   }
 
@@ -505,36 +690,88 @@ class ActivityService {
     }
   }
 
+  // static async editActivities(activityDetail, activity_id) {
+  //   let conn;
+  //   try {
+  //     conn = await pool.getConnection();
+  //     conn.beginTransaction();
+  //     await ActivityModel.updateActivity(
+  //       activityDetail.title,
+  //       activityDetail.description,
+  //       activity_id,
+  //       conn
+  //     );
+  //     await ActivityModel.updateActivityLocation(
+  //       activityDetail.event_location,
+  //       activityDetail.meet_location,
+  //       activity_id,
+  //       conn
+  //     );
+
+  //     await ActivityModel.updateActivitySupport(
+  //       activityDetail.max_donation,
+  //       activityDetail.participants,
+  //       activityDetail.attend_fee,
+  //       activity_id,
+  //       conn
+  //     );
+  //     await conn.commit();
+  //     return true;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
+
   static async valiateParticipants(acitivity_id, user_id) {
     return await ActivityModel.validateAttendee(acitivity_id, user_id);
   }
 
-  static async editActivities(activityDetail, activity_id) {
-    let conn;
-    try {
-      conn = await pool.getConnection();
-      conn.beginTransaction();
-      await ActivityModel.updateActivity(
-        activityDetail.title,
-        activityDetail.description,
-        activity_id,
-        conn
-      );
-      await ActivityModel.updateActivityLocation(
-        activityDetail.event_location,
-        activityDetail.meet_location,
-        activity_id,
-        conn
-      );
+  // static async editActivities(activityDetail, activity_id) {
+  //   let conn;
+  //   try {
+  //     conn = await pool.getConnection();
+  //     conn.beginTransaction();
+  //     await ActivityModel.updateActivity(
+  //       activityDetail.title,
+  //       activityDetail.description,
+  //       activity_id,
+  //       conn
+  //     );
+  //     await ActivityModel.updateActivityLocation(
+  //       activityDetail.event_location,
+  //       activityDetail.meet_location,
+  //       activity_id,
+  //       conn
+  //     );
 
-      await ActivityModel.updateActivitySupport(
-        activityDetail.max_donation,
-        activityDetail.participants,
-        activityDetail.attend_fee,
-        activity_id,
-        conn
-      );
-      await conn.commit();
+  //     await ActivityModel.updateActivitySupport(
+  //       activityDetail.max_donation,
+  //       activityDetail.participants,
+  //       activityDetail.attend_fee,
+  //       activity_id,
+  //       conn
+  //     );
+  //     await conn.commit();
+  //     return true;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
+
+  static async deleteReward(reward_id)
+  {
+    try {
+      const deleteReward = await ActivityModel.deleteReward(reward_id);
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async deleteExpense(expense_id)
+  {
+    try {
+      const deleteExpense = await ActivityModel.deleteExpense(expense_id);
       return true;
     } catch (error) {
       throw error;

@@ -30,6 +30,25 @@ exports.createActivity = async (req, res, next) => {
   }
 };
 
+exports.editActivity = async (req, res, next) => {
+  try {
+    const activityData = JSON.parse(req.body.activityData);
+
+    const activityImage = req.files["activity_image"]
+      ? req.files["activity_image"][0]
+      : null;
+    const rewardImages = req.files["reward_images"] || [];
+
+    const result = await ActivityService.editActivity(activityData, activityImage, rewardImages);
+
+    res
+    .status(201)
+    .json({ status: true, success: "Create Activity successfully" });
+  } catch (error) {
+    next(error);
+  }
+}
+
 exports.getActivities = async (req, res, next) => {
   try {
     const activity_type = req.query.activity_type || "Other";
@@ -61,6 +80,17 @@ exports.getHistory = async (req, res, next) => {
     const status = req.query.status;
     const userId = req.user._id;
     const activities = await ActivityService.getHistoryActivity(status, userId);
+
+    res.json({ status: true, success: activities });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getCreateHistory = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const activities = await ActivityService.getOwnHistory(userId);
 
     res.json({ status: true, success: activities });
   } catch (error) {
@@ -101,24 +131,9 @@ exports.getActivityCount = async (req, res, next) => {
   try {
     const user_id = req.user._id;
     const activityStatus = await ActivityService.getActivityCount(user_id);
+    console.log(activityStatus);
 
     res.json({ status: true, success: activityStatus });
-  } catch (error) {
-    next(error);
-  }
-};
-
-exports.editActivity = async (req, res, next) => {
-  try {
-    const activity_id = req.params.activity_id; 
-    const activityDetail = JSON.parse(req.body.activityData); 
-    const result = await ActivityService.editActivities(activityDetail, activity_id);
-
-    if (result) {
-      res.json({ status: true, success: "Activity updated successfully" });
-    } else {
-      res.status(404).json({ status: false, message: "Activity not found" });
-    }
   } catch (error) {
     next(error);
   }
@@ -146,7 +161,7 @@ exports.updateAttend = async (req, res, next) => {
         throw new Error("You are already attend this activity.");
     }
 
-    const attend = await ActivityService.updateAttendance(activity_id, userId);
+    const attend = await ActivityService.createAttendance(activity_id, userId);
     res.json({ status: true, success: "Attend activity successfully" });
   } catch (error) {
     next(error);
@@ -183,4 +198,24 @@ exports.checkIn = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.deleteReward = async (req, res, next) => {
+  try {
+    const reward_id = req.query.reward_id;
+    const delReward = await ActivityService.deleteReward(reward_id);
+    res.status(200).json({status : true, success : "Delete reward successfully"});
+  } catch (error) {
+    next(error);
+  }
+}
+
+exports.deleteExpense = async (req, res, next) => {
+  try {
+    const expense_id = req.query.expense_id;
+    const deleteExpense = await ActivityService.deleteExpense(expense_id);
+    res.status(200).json({status : true, success : "Delete expense successfully"});
+  } catch (error) {
+    next(error);
+  }
+}
 

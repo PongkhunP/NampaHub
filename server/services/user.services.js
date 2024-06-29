@@ -6,7 +6,7 @@ const pool = require("../configuration/db");
 const { fields } = require("../configuration/upload");
 
 class UserService {
-  static async registerUser(userDetails) {
+  static async registerUser(userDetails, user_image) {
     let conn;
     try {
       conn = await pool.getConnection();
@@ -57,8 +57,12 @@ class UserService {
         userDetails.end_year &&
         userDetails.edu_name
       ) {
-        const startYear = new Date(userDetails.start_year, 0, 1);
-        const endYear = new Date(userDetails.end_year, 0, 1);
+        const startYearFormat = parseInt(userDetails.start_year, 10);
+        const endYearFormat = parseInt(userDetails.end_year, 10);
+        
+        const startYear = `${startYearFormat}-01-01`;
+        const endYear = `${endYearFormat}-01-01`;
+
         const user_edu = await UserModel.createUserEdu(
           userDetails.edu_name,
           startYear,
@@ -68,10 +72,16 @@ class UserService {
         );
       }
 
+      const user_media = await UserModel.createUserMedia(
+        user_image.buffer,
+        userId,
+        conn
+      );
+
       await conn.commit();
       return { insertId: userId, ...user_account };
     } catch (err) {
-      throw error;
+      throw err;
     } finally {
       if (conn) {
         await conn.release();
@@ -89,6 +99,7 @@ class UserService {
       const user_edu = await UserModel.showUserEdu(user_id, conn);
       const user_work = await UserModel.showUserWork(user_id, conn);
       const user_location = await UserModel.showUserlocation(user_id, conn);
+      const user_media = await UserModel.showUserMedia(user_id, conn);
 
       await conn.commit();
       const userInfo = {
@@ -97,8 +108,9 @@ class UserService {
         ...user_edu[0],
         ...user_work[0],
         ...user_location[0],
+        user_media: user_media[0],
       };
-      // const userInfo = {user_account , user_personal , user_edu , user_work, user_location}
+
       return userInfo;
     } catch (error) {
       throw error;
@@ -109,7 +121,7 @@ class UserService {
     }
   }
 
-  static async EditUser(userDetails, user_Id) {
+  static async EditUser(userDetails, user_image_file, user_Id) {
     let conn;
     try {
       conn = await pool.getConnection();
@@ -140,6 +152,11 @@ class UserService {
       await UserModel.updateUserWorkData(
         userDetails.company_name,
         userDetails.job,
+        user_Id,
+        conn
+      );
+      await UserModel.updateUserMediaData(
+        user_image_file.buffer,
         user_Id,
         conn
       );
@@ -184,6 +201,74 @@ class UserService {
     }
   }
 
+  static async validateDeleteUser(user_id) {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+      await conn.beginTransaction();
+
+      const activitys = await ActivityModel.getActivityInfo(conn, {
+        field: "user_id",
+        operator: "=",
+        value: user_id,
+      });
+
+      const currentDate = new Date();
+      let isAbleToDeleteAcc = true;
+
+      for (const activity of activitys) {
+        const dates = await ActivityModel.getActivityDate(
+          conn,
+          { field: "activity_id", operator: "=", value: activity.Id },
+          ["end_event_date"]
+        );
+
+        if (dates.length > 0 && dates[0].end_event_date instanceof Date) {
+          const endEventDate = dates[0].end_event_date;
+          if (currentDate <= endEventDate) {
+            isAbleToDeleteAcc = false;
+          }
+        }
+      }
+      await conn.commit();
+
+      return isAbleToDeleteAcc;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async updateUserRating(rating, activity_id) {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+
+      const userId = await ActivityModel.getActivityInfo(
+        conn,
+        { field: "Id", operator: "=", value: activity_id },
+        ["user_id"]
+      );
+
+      const result = await UserModel.updateUserRating(
+        userId[0].user_id,
+        rating,
+        conn
+      );
+
+      if (!result) {
+        throw new Error("User not found or rating not updated.");
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    } finally {
+      if (conn) {
+        conn.release();
+      }
+    }
+  }
+
   static async checkUser(email) {
     return await UserModel.checkUser(email);
   }
@@ -199,18 +284,19 @@ class UserService {
     return jwt.sign(tokenData, secreteKey, { expiresIn: jwt_expired });
   }
 
-  static async updateUserRating( rating, activity_id) {
+  static async updateUserRating(rating, activity_id) {
     let conn;
     try {
       conn = await pool.getConnection();
-      
-      const userId = await ActivityModel.getActivityInfo(conn,
-        {field: 'Id', operator: '=', value:activity_id},
-        ['user_id']
+
+      const userId = await ActivityModel.getActivityInfo(
+        conn,
+        { field: "Id", operator: "=", value: activity_id },
+        ["user_id"]
       );
       console.log(userId[0].user_id);
       console.log(activity_id);
-      console.log(rating)
+      console.log(rating);
       const result = await UserModel.updateUserRating(
         userId[0].user_id,
         rating,
@@ -225,7 +311,7 @@ class UserService {
     } catch (error) {
       throw error;
     } finally {
-      if(conn){
+      if (conn) {
         conn.release();
       }
     }
@@ -237,11 +323,11 @@ class UserService {
       conn = await pool.getConnection();
       await conn.beginTransaction();
 
-      const activitys = await ActivityModel.getActivityInfo(
-        conn,
-        { field: "user_id", oprator: "=", value: user_id },
-      
-      );
+      const activitys = await ActivityModel.getActivityInfo(conn, {
+        field: "user_id",
+        oprator: "=",
+        value: user_id,
+      });
 
       const currentDate = new Date();
       let isAbleToDeleteAcc = true;
@@ -263,7 +349,6 @@ class UserService {
 
       await conn.commit();
 
-      
       return isAbleToDeleteAcc;
     } catch (error) {
       throw error;
