@@ -381,6 +381,56 @@ class ActivityModel {
     }
   }
 
+  static async updateCurrentParticipants(activityId, conn) {
+    try {
+      const query = `UPDATE activity_support SET current_participants = current_participants + 1 WHERE activity_id = ?`;
+      const result = await conn.query(query, [activityId]);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async updateAttendFee(activityId, attend_fee)
+  {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+
+      const query = `UPDATE activity_support SET attend_fee = ? WHERE activity_id = ?`;
+      const result = await conn.query(query, [attend_fee ,activityId]);
+
+      return result;
+    } catch (error) {
+      throw error;
+    } finally {
+      if(conn)
+      {
+        await conn.release();
+      }
+    }
+  }
+
+  static async updateBudget(donation_amount, activity_id)
+  {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+
+      const query = `UPDATE activity_support SET budget = budget + ? WHERE activity_id = ?`;
+      const result = await conn.query(query, [donation_amount, activity_id]);
+
+      return result;
+    } catch (error) {
+      throw error;
+    } finally {
+      if(conn)
+      {
+        await conn.release();
+      }
+    }
+  }
+
   static async getActivityRating(activity_id, conn) {
     try {
       const query = "SELECT rating from activity WHERE Id = ?";

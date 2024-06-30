@@ -1,4 +1,5 @@
 require("dotenv").config();
+const UserModel = require("../models/user.model");
 const Userservice = require("../services/user.services");
 
 exports.register = async (req, res, next) => {
@@ -141,6 +142,29 @@ exports.updateUserRating = async (req, res, next) => {
     );
 
     res.status(200).json({status: true, success: result});
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.createUserPayment = async (req, res, next) => {
+  try {
+    const accountId = req.body.accountId;
+    const userId = req.user._id;
+
+    const paymentCretedResult = await UserModel.createUserPayment(accountId, userId);
+    res.status(200).json({status: true , success : 'Create User payment successfully.'});
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getUserPayment = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+
+    const accountId = await UserModel.getUserPaymentId(userId);
+    res.status(200).json({status: true, accountId : accountId});
   } catch (error) {
     next(error);
   }

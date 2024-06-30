@@ -161,7 +161,6 @@ exports.updateAttend = async (req, res, next) => {
         throw new Error("You are already attend this activity.");
     }
 
-    const attend = await ActivityService.createAttendance(activity_id, userId);
     res.json({ status: true, success: "Attend activity successfully" });
   } catch (error) {
     next(error);

@@ -8,5 +8,5 @@ app.get('/' , (req , res)=> {
 });
 
 app.listen(port , () => {
-    console.log(`Server listening on Port http://${process.env.DB_HOST}:${port}`);
+    console.log(`Server listening on Port http://${process.env.BHOST}:${port}`);
 });

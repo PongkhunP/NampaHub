@@ -94,6 +94,21 @@ class UserModel {
     }
   }
 
+  static async createUserPayment(account_id , user_id)
+  {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+
+      const query = `INSERT INTO user_payment (account_id, user_id) VALUES (?, ?)`;
+      const result = await conn.query(query, [account_id, user_id]);
+
+      return result;
+    } catch (error) {
+      throw(error);
+    }
+  }
+
   static async checkUser(email) {
     let conn;
     try {
@@ -412,6 +427,20 @@ class UserModel {
       const result = await conn.query(query, [rating, Id]);
 
       return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getUserPaymentId(user_id)
+  {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+
+      const query = `SELECT account_id FROM user_payment WHERE user_id = ?`;
+      const result = await conn.query(query, [user_id]);
+      return result[0];
     } catch (error) {
       throw error;
     }

@@ -1,15 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const PaymentController = require('../controller/payment.controller');
 const PaymentsController = require('../controller/payments.controller');
 const error = require('../middleware/error');
 const authenticateToken = require('../middleware/authenticateToken');
 
-router.post('/order', authenticateToken , PaymentController.handleCreateOrder , error);
-router.post('/attend-paid', authenticateToken , PaymentController.handleCreateAttend, error);
-router.post('/capture', authenticateToken, PaymentController.handleCapture, error);
+
 router.post('/create-payment-intent', PaymentsController.createPayment, error);
-router.get('/return', PaymentController.handleCapture, error);
-router.get('/cancel', PaymentController.cancelPayment, error);
+router.post('/create-checkout-session' , PaymentsController.createPayout, error);
+router.post('/create-donate' , authenticateToken, PaymentsController.createDonate, error);
+router.post('/create-donate-attend', authenticateToken , PaymentsController.createDonateAttendFee, error);
+router.get('/create-onboard-link', PaymentsController.createOnboardingLink, error);
+router.post('/create-attend', authenticateToken, PaymentsController.createAttend, error);
+router.get('/return-success-attend' , PaymentsController.handleSuccessAttend, error);
+router.get('/return-success-donate', PaymentsController.handleSuccessDonate, error);
+router.get('/return-success-donate-attend', PaymentsController.handleSuccessDonateAttend,error)
+router.get('/return-cancel' , PaymentsController.handleCancel, error);
+
 
 module.exports = router;

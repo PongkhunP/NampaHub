@@ -636,6 +636,8 @@ class ActivityService {
     let conn;
     try {
       conn = await pool.getConnection();
+      conn.beginTransaction();
+
       const participated = false;
       const attendance = await ActivityModel.createActivityAttendance(
         activity_id,
@@ -643,6 +645,10 @@ class ActivityService {
         participated,
         conn,
       );
+      const current_participation = await ActivityModel.updateCurrentParticipants(activity_id,conn);
+
+      conn.commit();
+
       return attendance;
     } catch (error) {
       throw error;
@@ -776,6 +782,20 @@ class ActivityService {
     } catch (error) {
       throw error;
     }
+  }
+
+  static async getUserId(activity_id)
+  {
+    let conn;
+    try {
+      conn = await pool.getConnection();
+
+      const result = await ActivityModel.getActivityInfo(conn, {field : 'Id', operator: '=', value: activity_id}, ['user_id']);
+
+      return result[0].user_id;
+    } catch (error) {
+      throw error;
+    } 
   }
 }
 
