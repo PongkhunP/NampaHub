@@ -179,10 +179,8 @@ class UserService {
       await conn.beginTransaction;
 
       const activity_ids = await ActivityModel.getActivityOfUser(user_id, conn);
-      console.log("Activity ids : " + activity_ids);
 
       for (const activity_id in activity_ids) {
-        console.log("Activity ids : " + activity_id);
         await UserModel.deleteActivityData(activity_id, conn);
       }
       const delete_user = await UserModel.deleteAllUserRelatedData(
@@ -294,9 +292,6 @@ class UserService {
         { field: "Id", operator: "=", value: activity_id },
         ["user_id"]
       );
-      console.log(userId[0].user_id);
-      console.log(activity_id);
-      console.log(rating);
       const result = await UserModel.updateUserRating(
         userId[0].user_id,
         rating,

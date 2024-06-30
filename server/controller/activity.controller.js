@@ -8,7 +8,6 @@ exports.createActivity = async (req, res, next) => {
     const user_id = req.user._id;
     const user_email = req.user.email;
     const activityData = JSON.parse(req.body.activityData);
-    console.log("Parsed activity data:", activityData);
     const activityImage = req.files["activity_image"]
       ? req.files["activity_image"][0]
       : null;
@@ -131,7 +130,6 @@ exports.getActivityCount = async (req, res, next) => {
   try {
     const user_id = req.user._id;
     const activityStatus = await ActivityService.getActivityCount(user_id);
-    console.log(activityStatus);
 
     res.json({ status: true, success: activityStatus });
   } catch (error) {

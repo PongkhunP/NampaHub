@@ -5,7 +5,6 @@ const Userservice = require("../services/user.services");
 exports.register = async (req, res, next) => {
   try {
     const userDetails = JSON.parse(req.body.userDetails);
-    console.log("user-detail :" + userDetails)
     if (!userDetails.password) {
       console.error("Password is missing in request body"); // Log missing password error
     }

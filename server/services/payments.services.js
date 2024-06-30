@@ -145,13 +145,6 @@ class PaymentsService {
       const new_total = total - (amount / 100);
       const new_attend_fee = new_total / current_participants;
 
-      console.log("attend fee check : " + attend_fee);
-      console.log("current participants log : " + current_participants);
-
-      console.log("total check : " + total);
-      console.log("new total check : " + new_total);
-      console.log("new attend fee check : " + new_attend_fee);
-
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items: [{

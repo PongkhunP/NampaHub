@@ -15,7 +15,6 @@ class ActivityService {
     try {
       await conn.beginTransaction();
 
-      console.log("Creating activity info...");
       const goals = activityData.goals
         ? JSON.stringify(activityData.goals)
         : "[]";
@@ -34,9 +33,7 @@ class ActivityService {
       );
 
       const activity_id = activityInfo.insertId;
-      console.log(`Activity created with ID: ${activity_id}`);
 
-      console.log("Creating activity location...");
       await ActivityModel.createActivityLocation(
         activityData.activity_location.event_location,
         activityData.activity_location.meet_location,
@@ -44,7 +41,6 @@ class ActivityService {
         conn
       );
 
-      console.log("Creating activity date...");
       await ActivityModel.createActivityDate(
         activityData.activity_date.start_regis_date,
         activityData.activity_date.end_regis_date,
@@ -54,7 +50,6 @@ class ActivityService {
         conn
       );
 
-      console.log("Creating activity support...");
       await ActivityModel.createActivitySupport(
         activityData.activity_support.max_donation,
         activityData.activity_support.participants,
@@ -65,7 +60,6 @@ class ActivityService {
         conn
       );
 
-      console.log("Creating activity expenses...");
       for (const expense of activityData.expenses) {
         await ActivityModel.createActivityExpense(
           expense.name,
@@ -76,7 +70,6 @@ class ActivityService {
       }
 
       if (activityImage) {
-        console.log("Creating activity media...");
         await ActivityModel.createActivityMedia(
           activityImage.buffer,
           activity_id,
@@ -99,7 +92,6 @@ class ActivityService {
         }
       }
 
-      console.log("Initialize participation list for activity...");
       const participated = true;
       await ActivityModel.createActivityAttendance(activity_id, user_id, participated, conn);
 
@@ -124,7 +116,6 @@ class ActivityService {
     try {
       await conn.beginTransaction();
 
-      console.log("Updating activity info...");
       const goals = activityData.goals
         ? JSON.stringify(activityData.goals)
         : "[]";
@@ -142,7 +133,6 @@ class ActivityService {
         conn
       );
 
-      console.log("Updating activity location...");
       await ActivityModel.editActivityLocation(
         activityData.id,
         activityData.activity_location.event_location,
@@ -150,7 +140,6 @@ class ActivityService {
         conn
       );
 
-      console.log("Updating activity date...");
       await ActivityModel.editActivityDate(
         activityData.id,
         activityData.activity_date.start_regis_date,
@@ -160,7 +149,6 @@ class ActivityService {
         conn
       );
 
-      console.log("Updating activity support...");
       await ActivityModel.editActivitySupport(
         activityData.id,
         activityData.activity_support.max_donation,
@@ -171,7 +159,6 @@ class ActivityService {
         conn
       );
 
-      console.log("Updating activity expenses...");
       for (const expense of activityData.expenses) {
         await ActivityModel.editActivityExpense(
           expense.id,
@@ -182,10 +169,7 @@ class ActivityService {
         );
       }
 
-      console.log("Activity Image : "+ activityImage); 
-
       if (activityImage) {
-        console.log("Updating activity media...");
         await ActivityModel.editActivityMedia(
           activityData.id,
           activityImage.buffer,
@@ -193,7 +177,6 @@ class ActivityService {
         );
       }
 
-      console.log("reward images : " + rewardImages);
 
       for (const rewardImage of rewardImages) {
         const rewardData = activityData.rewards.find(
@@ -214,7 +197,6 @@ class ActivityService {
       await conn.commit();
       return { success : true};
     } catch (error) {
-      console.error("Error creating activity:", error);
       await conn.rollback();
       throw error;
     } finally {
@@ -246,7 +228,6 @@ class ActivityService {
       ]);
   
       const currentDate = new Date();
-      console.log("Current Date:", currentDate);
   
       const filteredActivities = [];
   
@@ -282,11 +263,9 @@ class ActivityService {
             }
   
             filteredActivities.push(activity);
-          } else {
-            console.log("Activity ended:", activity.Id);
-          }
+          } 
         } else {
-          console.log("No valid end event date found for activity:", activity.Id);
+          ("No valid end event date found for activity:", activity.Id);
         }
       }
   

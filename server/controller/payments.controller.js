@@ -64,14 +64,11 @@ exports.createDonate = async (req, res, next) => {
 
     const userId = await ActivityService.getUserId(activityId);
 
-    console.log("User id check : " + userId);
 
     const accountId = await UserModel.getUserPaymentId(userId);
 
-    console.log("Account Id : " + accountId);
-
     const session = await PaysmentService.createDonation(amount, accountId.account_id, activityId);
-    console.log("Url : " + session.url);
+
     res.status(200).json({url : session.url});
   } catch (error) {
     next(error);
@@ -85,17 +82,12 @@ exports.createDonateAttendFee = async (req, res, next) => {
     const attendFee = req.body.attend_fee;
     const activityId = req.body.activity_id;
 
-    console.log("amount check : " + amount);
-    console.log("current participants : " +currentParticipation);
-    console.log("attend Fee : " + attendFee);
-
     const userId = await ActivityService.getUserId(activityId);
 
     const accountId = await UserModel.getUserPaymentId(userId);
 
-
     const session = await PaysmentService.createDonationAttendFee(amount, accountId.account_id, activityId, attendFee, currentParticipation);
-    console.log("Url : " + session.url);
+
     res.status(200).json({url : session.url});
   } catch (error) {
     next(error);

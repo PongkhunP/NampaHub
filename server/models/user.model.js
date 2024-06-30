@@ -328,17 +328,6 @@ class UserModel {
                        age = VALUES(age),
                        phone = VALUES(phone);`;
 
-      // Log query and parameters for debugging
-      console.log("Query:", query);
-      console.log("Parameters:", [
-        first_name,
-        last_name,
-        middle_name,
-        user_id,
-        age,
-        phone,
-      ]);
-
       const result = await conn.query(query, [
         user_id,
         first_name,
