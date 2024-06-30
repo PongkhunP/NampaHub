@@ -44,8 +44,8 @@ class PaymentsService {
           },
         ],
         mode: "payment",
-        success_url: `http://${process.env.BHOST}:${process.env.PORT}/api/payment/return-success`,
-        cancel_url: `http://${process.env.BHOST}:${process.env.PORT}/api/payment/return-cancel`,
+        success_url: `http://${process.env.BHOST}/api/payment/return-success`,
+        cancel_url: `http://${process.env.BHOST}/api/payment/return-cancel`,
       });
       return session;
     } catch (error) {
@@ -61,8 +61,8 @@ class PaymentsService {
 
       const accountLink = await stripe.accountLinks.create({
         account: account.id,
-        refresh_url: `http://${process.env.BHOST}:${process.env.PORT}/api/payment/return-cancel`,
-        return_url: `http://${process.env.BHOST}:${process.env.PORT}/api/payment/return-cancel`,
+        refresh_url: `http://${process.env.BHOST}/api/payment/return-cancel`,
+        return_url: `http://${process.env.BHOST}/api/payment/return-cancel`,
         type: "account_onboarding",
       });
 
@@ -98,8 +98,8 @@ class PaymentsService {
           application_fee_amount: platformFee,
         },
         mode: "payment",
-        success_url: `http://${process.env.BHOST}:${process.env.PORT}/api/payment/return-success-attend?activity_id=${activity_id}&user_id=${user_id}`,
-        cancel_url: `http://${process.env.BHOST}:${process.env.PORT}/api/payment/return-cancel`,
+        success_url: `http://${process.env.BHOST}/api/payment/return-success-attend?activity_id=${activity_id}&user_id=${user_id}`,
+        cancel_url: `http://${process.env.BHOST}/api/payment/return-cancel`,
       });
 
 
@@ -129,8 +129,8 @@ class PaymentsService {
           },
         },
         mode: "payment",
-        success_url: `http://${process.env.BHOST}:${process.env.PORT}/api/payment/return-success-donate?activity_id=${activityId}&amount=${amount}`,
-        cancel_url: `http://${process.env.BHOST}:${process.env.PORT}/api/payment/return-cancel`,
+        success_url: `http://${process.env.BHOST}/api/payment/return-success-donate?activity_id=${activityId}&amount=${amount}`,
+        cancel_url: `http://${process.env.BHOST}/api/payment/return-cancel`,
       });
   
       return session;
@@ -163,8 +163,8 @@ class PaymentsService {
           },
         },
         mode: "payment",
-        success_url: `http://${process.env.BHOST}:${process.env.PORT}/api/payment/return-success-donate-attend?activity_id=${activityId}&attend_fee=${new_attend_fee}`,
-        cancel_url: `http://${process.env.BHOST}:${process.env.PORT}/api/payment/return-cancel`,
+        success_url: `http://${process.env.BHOST}/api/payment/return-success-donate-attend?activity_id=${activityId}&attend_fee=${new_attend_fee}`,
+        cancel_url: `http://${process.env.BHOST}/api/payment/return-cancel`,
       });
   
       return session;
