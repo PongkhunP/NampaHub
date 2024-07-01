@@ -233,6 +233,11 @@ class UserService {
       return isAbleToDeleteAcc;
     } catch (error) {
       throw error;
+    } finally {
+      if(conn)
+      {
+        await conn.release();
+      }
     }
   }
 
@@ -262,7 +267,7 @@ class UserService {
       throw error;
     } finally {
       if (conn) {
-        conn.release();
+        await conn.release();
       }
     }
   }
@@ -280,78 +285,6 @@ class UserService {
 
   static async generateToken(tokenData, secreteKey, jwt_expired) {
     return jwt.sign(tokenData, secreteKey, { expiresIn: jwt_expired });
-  }
-
-  static async updateUserRating(rating, activity_id) {
-    let conn;
-    try {
-      conn = await pool.getConnection();
-
-      const userId = await ActivityModel.getActivityInfo(
-        conn,
-        { field: "Id", operator: "=", value: activity_id },
-        ["user_id"]
-      );
-      const result = await UserModel.updateUserRating(
-        userId[0].user_id,
-        rating,
-        conn
-      );
-
-      if (!result || result.affectedRows === 0) {
-        throw new Error("User not found or rating not updated.");
-      }
-
-      return { success: true, message: "User Rating updated successfully" };
-    } catch (error) {
-      throw error;
-    } finally {
-      if (conn) {
-        conn.release();
-      }
-    }
-  }
-
-  static async validateDeleteUser(user_id) {
-    let conn;
-    try {
-      conn = await pool.getConnection();
-      await conn.beginTransaction();
-
-      const activitys = await ActivityModel.getActivityInfo(conn, {
-        field: "user_id",
-        oprator: "=",
-        value: user_id,
-      });
-
-      const currentDate = new Date();
-      let isAbleToDeleteAcc = true;
-
-      for (const activity of activitys) {
-        const dates = await ActivityModel.getActivityDate(
-          conn,
-          { field: "activity_id", operator: "=", value: activity.Id },
-          ["end_event_date"]
-        );
-
-        if (dates.length > 0 && dates[0].end_event_date instanceof Date) {
-          const endEventDate = dates[0].end_event_date;
-          if (currentDate <= endEventDate) {
-            isAbleToDeleteAcc = false;
-          }
-        }
-      }
-
-      await conn.commit();
-
-      return isAbleToDeleteAcc;
-    } catch (error) {
-      throw error;
-    } finally {
-      if (conn) {
-        await conn.release();
-      }
-    }
   }
 
 }

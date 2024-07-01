@@ -102,7 +102,10 @@ class ActivityService {
       await conn.rollback();
       throw error;
     } finally {
-      conn.release();
+      if(conn)
+      {
+        await conn.release();
+      }
     }
   }
 
@@ -200,7 +203,10 @@ class ActivityService {
       await conn.rollback();
       throw error;
     } finally {
-      conn.release();
+      if(conn)
+        {
+          await conn.release();
+        }
     }
   }
 
@@ -626,15 +632,19 @@ class ActivityService {
       );
       const current_participation = await ActivityModel.updateCurrentParticipants(activity_id,conn);
 
-      conn.commit();
+      await conn.commit();
 
       return attendance;
     } catch (error) {
+      if(conn)
+      {
+         await conn.rollback();
+      }
       throw error;
     } finally {
       if(conn)
       {
-        conn.release();
+        await conn.release();
       }
     }
   }
@@ -675,73 +685,9 @@ class ActivityService {
     }
   }
 
-  // static async editActivities(activityDetail, activity_id) {
-  //   let conn;
-  //   try {
-  //     conn = await pool.getConnection();
-  //     conn.beginTransaction();
-  //     await ActivityModel.updateActivity(
-  //       activityDetail.title,
-  //       activityDetail.description,
-  //       activity_id,
-  //       conn
-  //     );
-  //     await ActivityModel.updateActivityLocation(
-  //       activityDetail.event_location,
-  //       activityDetail.meet_location,
-  //       activity_id,
-  //       conn
-  //     );
-
-  //     await ActivityModel.updateActivitySupport(
-  //       activityDetail.max_donation,
-  //       activityDetail.participants,
-  //       activityDetail.attend_fee,
-  //       activity_id,
-  //       conn
-  //     );
-  //     await conn.commit();
-  //     return true;
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
-
   static async valiateParticipants(acitivity_id, user_id) {
     return await ActivityModel.validateAttendee(acitivity_id, user_id);
   }
-
-  // static async editActivities(activityDetail, activity_id) {
-  //   let conn;
-  //   try {
-  //     conn = await pool.getConnection();
-  //     conn.beginTransaction();
-  //     await ActivityModel.updateActivity(
-  //       activityDetail.title,
-  //       activityDetail.description,
-  //       activity_id,
-  //       conn
-  //     );
-  //     await ActivityModel.updateActivityLocation(
-  //       activityDetail.event_location,
-  //       activityDetail.meet_location,
-  //       activity_id,
-  //       conn
-  //     );
-
-  //     await ActivityModel.updateActivitySupport(
-  //       activityDetail.max_donation,
-  //       activityDetail.participants,
-  //       activityDetail.attend_fee,
-  //       activity_id,
-  //       conn
-  //     );
-  //     await conn.commit();
-  //     return true;
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
 
   static async deleteReward(reward_id)
   {
@@ -774,7 +720,12 @@ class ActivityService {
       return result[0].user_id;
     } catch (error) {
       throw error;
-    } 
+    } finally {
+      if(conn)
+      {
+        await conn.release();
+      }
+    }
   }
 }
 
