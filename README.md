@@ -37,17 +37,3 @@ NampaHub is a mobile application that connects investors with sustainable develo
 
 ### Development Tools
 - **Backend Dev Server**: Nodemon 3.1.3
-
-## Getting Started
-
-### Prerequisites
-- Flutter SDK 3.3.1 or higher
-- Node.js and npm
-- MariaDB database
-
-### Installation
-
-**Backend Setup**:
-```bash
-npm install
-npm run dev
