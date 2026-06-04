@@ -1,12 +1,12 @@
-const app = require('./app');
+require('dotenv').config();
 
-const port = 3000;
+const app = require('./app');
+const port = process.env.PORT;
 
 app.get('/' , (req , res)=> {
     res.send('Hello world!!!');
 });
 
-
 app.listen(port , () => {
-    console.log(`Server listening on Port http://localhost:${port}`);
+    console.log(`Server listening on Port http://${process.env.BHOST}:${port}`);
 });
